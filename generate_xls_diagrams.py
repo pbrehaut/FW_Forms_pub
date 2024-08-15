@@ -214,7 +214,7 @@ def generate_output(cust_rules, config_mgr):
 
 if __name__ == "__main__":
     config_mgr = ConfigManager('config.ini')
-    TEST_DATA = 'Output/json_rule_dumps/BOQ_08_Aug_24_17-52-40.json'
+    TEST_DATA = 'filename.json'
     with open(TEST_DATA, 'r') as file:
         cust_rules = json.load(file)
         x_str = generate_output(cust_rules, config_mgr)
