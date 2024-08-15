@@ -2,3 +2,4 @@ networkx
 graphviz
 openpyxl
 PyYAML
+Pillow
