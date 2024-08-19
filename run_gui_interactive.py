@@ -289,9 +289,11 @@ class NetworkInfoGUI:
             messagebox.showwarning("Warning", "Please select a customer.")
             return
 
-        # Store current values
-        self.stored_file_path.set(self.file_path.get())
-        self.stored_diagram_dir_path.set(self.stored_diagram_dir_path.get())
+        # Clear previous data
+        self.results = {}
+        self.file_path.set("")
+        self.stored_file_path.set("")
+        self.stored_diagram_dir_path.set("")
 
         # Remove initial form
         for widget in self.master.winfo_children():
