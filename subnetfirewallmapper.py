@@ -1,6 +1,6 @@
 import yaml
 import ipaddress
-from typing import Dict, Optional, Union
+from typing import Dict, Optional, Union, List, Tuple
 
 
 class SubnetFirewallMapper:
@@ -56,8 +56,17 @@ class SubnetFirewallMapper:
         return subnet_firewall_map
 
     def find_matching_firewall(self, ip_obj: Union[ipaddress.IPv4Interface, ipaddress.IPv4Network]) -> Optional[str]:
+        matches: List[Tuple[ipaddress.IPv4Network, str]] = []
         for subnet, firewall in self.subnet_firewall_map.items():
             if (ip_obj.network.subnet_of(subnet) or
                     ip_obj.network.network_address == subnet.network_address):
-                return firewall
-        return None
+                matches.append((subnet, firewall))
+
+        if not matches:
+            return None
+
+        # Sort matches by prefix length in descending order (most specific first)
+        matches.sort(key=lambda x: x[0].prefixlen, reverse=True)
+
+        # Return the firewall associated with the most specific match
+        return matches[0][1]
