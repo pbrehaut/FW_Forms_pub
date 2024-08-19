@@ -12,7 +12,7 @@ class NetworkInfoGUI:
     def __init__(self, master):
         self.master = master
         self.master.title("Network Information")
-        self.master.geometry("400x600")
+        self.master.geometry("600x600")
 
         self.stored_file_path = tk.StringVar()
         self.stored_diagram_dir_path = tk.StringVar()
