@@ -14,6 +14,9 @@ class NetworkInfoGUI:
         self.master.title("Network Information")
         self.master.geometry("400x600")
 
+        self.stored_file_path = tk.StringVar()
+        self.stored_diagram_dir_path = tk.StringVar()
+
         topology = ConfigManager(CONFIG_FILE)
         self.customers = topology.get_customers()
         self.results = {}
@@ -23,18 +26,25 @@ class NetworkInfoGUI:
         # Initial Form
         self.create_initial_form()
 
+    def go_back_to_initial_form(self):
+        # Clear the manual input form
+        self.manual_input_frame.destroy()
+
+        # Recreate the initial form
+        self.create_initial_form()
+
     def browse_directory(self):
         dir_path = filedialog.askdirectory()
         if dir_path:
-            self.diagram_dir_path.set(dir_path)
+            self.stored_diagram_dir_path.set(dir_path)
 
     def render_diagrams(self):
-        if not self.diagram_dir_path.get():
+        if not self.stored_diagram_dir_path.get():
             messagebox.showwarning("Warning", "Please select a directory.")
             return
 
         from diagram_renderer import render_diagrams_in_directory
-        render_diagrams_in_directory(self.diagram_dir_path.get())
+        render_diagrams_in_directory(self.stored_diagram_dir_path.get())
         messagebox.showinfo("Rendering Complete", "Diagrams have been rendered successfully.")
 
     def create_initial_form(self):
@@ -45,7 +55,7 @@ class NetworkInfoGUI:
         file_frame = tk.Frame(self.master)
         file_frame.pack(pady=5)
 
-        self.file_entry = tk.Entry(file_frame, textvariable=self.file_path, width=30)
+        self.file_entry = tk.Entry(file_frame, textvariable=self.stored_file_path, width=30)
         self.file_entry.pack(side=tk.LEFT)
 
         self.browse_button = tk.Button(file_frame, text="Browse", command=self.browse_file)
@@ -65,7 +75,8 @@ class NetworkInfoGUI:
         self.select_customer_label = tk.Label(self.master, text="Select Customer:")
         self.select_customer_label.pack()
 
-        self.customer_combo = ttk.Combobox(self.master, textvariable=self.selected_customer, values=list(self.customers))
+        self.customer_combo = ttk.Combobox(self.master, textvariable=self.selected_customer,
+                                           values=list(self.customers))
         self.customer_combo.pack(pady=5)
 
         self.start_manual_button = tk.Button(self.master, text="Start Manual Input", command=self.start_manual_input)
@@ -79,11 +90,10 @@ class NetworkInfoGUI:
         self.diagram_label = tk.Label(self.master, text="Render Diagrams", font=("Arial", 12, "bold"))
         self.diagram_label.pack(pady=(10, 10))
 
-        self.diagram_dir_path = tk.StringVar()
         diagram_frame = tk.Frame(self.master)
         diagram_frame.pack(pady=5)
 
-        self.diagram_dir_entry = tk.Entry(diagram_frame, textvariable=self.diagram_dir_path, width=30)
+        self.diagram_dir_entry = tk.Entry(diagram_frame, textvariable=self.stored_diagram_dir_path, width=30)
         self.diagram_dir_entry.pack(side=tk.LEFT)
 
         self.browse_dir_button = tk.Button(diagram_frame, text="Browse", command=self.browse_directory)
@@ -129,6 +139,10 @@ class NetworkInfoGUI:
         ttk.Button(button_frame, text="Add Entry", command=self.add_entry).pack(side=tk.LEFT, padx=5)
         ttk.Button(button_frame, text="Update Entry", command=self.update_entry).pack(side=tk.LEFT, padx=5)
         ttk.Button(button_frame, text="Delete Entry", command=self.delete_entry).pack(side=tk.LEFT, padx=5)
+
+        # Add a "Back" button
+        back_button = ttk.Button(button_frame, text="Back", command=self.go_back_to_initial_form)
+        back_button.pack(side=tk.LEFT, padx=5)
 
         # Submit Button (now in button_frame)
         self.submit_button = ttk.Button(button_frame, text="Submit", command=self.submit_results)
@@ -203,14 +217,14 @@ class NetworkInfoGUI:
     def browse_file(self):
         file_path = filedialog.askopenfilename(filetypes=[("JSON Files", "*.json"), ("All Files", "*.*")])
         if file_path:
-            self.file_path.set(file_path)
+            self.stored_file_path.set(file_path)
 
     def load_file(self):
-        if not self.file_path.get():
+        if not self.stored_file_path.get():
             messagebox.showwarning("Warning", "Please select a file.")
             return
         try:
-            with open(self.file_path.get(), 'r') as file:
+            with open(self.stored_file_path.get(), 'r') as file:
                 self.results = json.load(file)
 
             # Extract the customer key from the JSON data
@@ -224,15 +238,12 @@ class NetworkInfoGUI:
             # Create and show manual input form
             self.create_manual_input_form()
 
-            messagebox.showinfo("File Loaded", f"File {self.file_path.get()} loaded successfully.")
+            messagebox.showinfo("File Loaded", f"File {self.stored_file_path.get()} loaded successfully.")
         except json.JSONDecodeError:
             messagebox.showerror("Error", "Invalid JSON file. Please select a valid JSON file.")
         except IOError:
             messagebox.showerror("Error",
                                  "Could not read the file. Please check if the file exists and you have permission to read it.")
-
-    import tkinter as tk
-    from tkinter import ttk, messagebox, Text, filedialog
 
     def process_results(self):
         config_mgr = ConfigManager(CONFIG_FILE)
@@ -277,6 +288,10 @@ class NetworkInfoGUI:
         if not self.selected_customer.get():
             messagebox.showwarning("Warning", "Please select a customer.")
             return
+
+        # Store current values
+        self.stored_file_path.set(self.file_path.get())
+        self.stored_diagram_dir_path.set(self.stored_diagram_dir_path.get())
 
         # Remove initial form
         for widget in self.master.winfo_children():
