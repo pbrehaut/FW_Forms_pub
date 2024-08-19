@@ -23,6 +23,20 @@ class NetworkInfoGUI:
         # Initial Form
         self.create_initial_form()
 
+    def browse_directory(self):
+        dir_path = filedialog.askdirectory()
+        if dir_path:
+            self.diagram_dir_path.set(dir_path)
+
+    def render_diagrams(self):
+        if not self.diagram_dir_path.get():
+            messagebox.showwarning("Warning", "Please select a directory.")
+            return
+
+        from diagram_renderer import render_diagrams_in_directory
+        render_diagrams_in_directory(self.diagram_dir_path.get())
+        messagebox.showinfo("Rendering Complete", "Diagrams have been rendered successfully.")
+
     def create_initial_form(self):
         # File Selection Section
         self.file_label = tk.Label(self.master, text="Load from File", font=("Arial", 12, "bold"))
@@ -56,6 +70,27 @@ class NetworkInfoGUI:
 
         self.start_manual_button = tk.Button(self.master, text="Start Manual Input", command=self.start_manual_input)
         self.start_manual_button.pack(pady=5)
+
+        # Separator
+        self.separator2 = ttk.Separator(self.master, orient='horizontal')
+        self.separator2.pack(fill='x', pady=20)
+
+        # Diagram Rendering Section
+        self.diagram_label = tk.Label(self.master, text="Render Diagrams", font=("Arial", 12, "bold"))
+        self.diagram_label.pack(pady=(10, 10))
+
+        self.diagram_dir_path = tk.StringVar()
+        diagram_frame = tk.Frame(self.master)
+        diagram_frame.pack(pady=5)
+
+        self.diagram_dir_entry = tk.Entry(diagram_frame, textvariable=self.diagram_dir_path, width=30)
+        self.diagram_dir_entry.pack(side=tk.LEFT)
+
+        self.browse_dir_button = tk.Button(diagram_frame, text="Browse", command=self.browse_directory)
+        self.browse_dir_button.pack(side=tk.LEFT)
+
+        self.render_button = tk.Button(self.master, text="Render Diagrams", command=self.render_diagrams)
+        self.render_button.pack(pady=5)
 
     def create_manual_input_form(self):
         #  Reset self.results to an empty dictionary
