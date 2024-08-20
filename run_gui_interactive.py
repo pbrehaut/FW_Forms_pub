@@ -194,6 +194,8 @@ class NetworkInfoGUI:
         if first_field:
             self.master.after(100, lambda: first_field.focus_set())
 
+        self.master.bind("<Return>", lambda event: self.submit_results())
+
     def bind_tab_navigation(self):
         def focus_next_widget(event):
             event.widget.tk_focusNext().focus()
@@ -278,6 +280,13 @@ class NetworkInfoGUI:
 
         # Set the text box as read-only
         result_text.configure(state="disabled")
+
+        # Bind the Enter key to close the window
+        result_window.bind('<Return>', lambda event: result_window.destroy())
+
+        # Set focus to the result window so it can receive keyboard events
+        result_window.focus_set()
+
 
     def submit_results(self):
         self.results[self.selected_customer.get()] = [self.tree.item(item)["values"] for item in
