@@ -1,3 +1,4 @@
+import os
 import tkinter as tk
 from tkinter import ttk, messagebox, Text, filedialog
 import json
@@ -18,12 +19,12 @@ class NetworkInfoGUI:
         self.stored_file_path = tk.StringVar()
         self.stored_diagram_dir_path = tk.StringVar()
 
-        topology = ConfigManager(CONFIG_FILE)
-        self.customers = topology.get_customers()
+        self.topology = ConfigManager(CONFIG_FILE)
+        self.customers = self.topology.get_customers()
         self.results = {}
         self.selected_customer = tk.StringVar()
         self.file_path = tk.StringVar()
-        self.template_dir = topology.get_files_config(self.selected_customer.get())['template_directory']
+
 
         # Initial Form
         self.create_initial_form()
@@ -50,6 +51,7 @@ class NetworkInfoGUI:
         messagebox.showinfo("Rendering Complete", "Diagrams have been rendered successfully.")
 
     def create_initial_form(self):
+        self.master.geometry("400x500")
         # File Selection Section
         self.file_label = tk.Label(self.master, text="Load from File", font=("Arial", 12, "bold"))
         self.file_label.pack(pady=(20, 10))
@@ -108,6 +110,8 @@ class NetworkInfoGUI:
         #  Reset self.results to an empty dictionary
         # self.results = {}
 
+        self.master.geometry("700x600")
+
         self.manual_input_frame = ttk.Frame(self.master)
         self.manual_input_frame.pack(padx=10, pady=10, fill="both", expand=True)
 
@@ -151,6 +155,17 @@ class NetworkInfoGUI:
                                     command=lambda: self.edit_excel_form(self.selected_customer.get() + ".EXCEL",
                                                                     CONFIG_FILE))
         options_button.pack(side=tk.LEFT, padx=5)
+
+
+        # Add an "template select" button
+        template_button = ttk.Button(button_frame, text="Template",
+                                    command=lambda: self.edit_excel_form(self.selected_customer.get() + ".FILES",
+                                                                    CONFIG_FILE))
+        template_button.pack(side=tk.LEFT, padx=5)
+
+
+
+
 
         # Submit Button (now in button_frame)
         self.submit_button = ttk.Button(button_frame, text="Submit", command=self.submit_results)
@@ -370,7 +385,15 @@ class NetworkInfoGUI:
             label = tk.Label(edit_window, text=option)
             label.grid(row=i, column=0, padx=10, pady=5, sticky="e")
 
-            if option in ["group_gateways", "detailed_diagrams", "include_flow_count"]:
+            if option == "template_filename":
+                # Populate the drop-down with filenames from the template directory
+                files = self.topology.get_files_config(self.selected_customer.get())
+                files = files.get('template_directory', None)
+                files = os.listdir(files)
+                var_dict[option] = tk.StringVar(value=value)
+                option_menu = ttk.Combobox(edit_window, textvariable=var_dict[option], values=files, width=40)
+                option_menu.grid(row=i, column=1, padx=10, pady=5)
+            elif option in ["group_gateways", "detailed_diagrams", "include_flow_count"]:
                 var_dict[option] = tk.StringVar(value=value)
                 option_menu = ttk.Combobox(edit_window, textvariable=var_dict[option], values=["yes", "no"])
                 option_menu.grid(row=i, column=1, padx=10, pady=5)
