@@ -98,3 +98,4 @@ The project uses a `config.ini` file to manage settings for different customers 
 2. Install required dependencies: pip install -r requirements.txt
 3. Rename `config_template.ini` to `config.ini`
 4. Configure the `config.ini` file with appropriate settings for your environment
+5. Install Graphviz application to you local host to render diagrams
