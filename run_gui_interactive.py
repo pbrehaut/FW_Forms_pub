@@ -393,7 +393,7 @@ class NetworkInfoGUI:
                 files = self.topology.get_files_config(self.selected_customer.get())
                 files = files.get('template_directory', None)
                 files = os.listdir(files)
-                files.append("None")
+                files.insert(0,"None")
                 var_dict[option] = tk.StringVar(value=value)
                 option_menu = ttk.Combobox(edit_window, textvariable=var_dict[option], values=files, width=40)
                 option_menu.grid(row=i, column=1, padx=10, pady=5)
