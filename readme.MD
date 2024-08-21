@@ -15,7 +15,7 @@ The project consists of multiple Python modules and a configuration file:
 7. `generate_diagram.py`
 8. `group_rules.py`
 9. `generate_xl_output.py`
-10. `run_gui_interactive.py`
+10. `run_gui.py`
 11. `subnetfirewallmapper.py`
 12. `write_excel_from_tmpl.py`
 
@@ -24,8 +24,9 @@ The project consists of multiple Python modules and a configuration file:
 ### combine_diagrams.py
 Contains a function to process and combine tuple fields from input data, removing duplicates while preserving order.
 
-### config.ini
+### config_template.ini
 The configuration file for the project, containing settings for different customers, topology information, Excel configuration, and file paths.
+Customise this and rename to config.ini
 
 ### configmanager.py
 A class for managing the configuration settings, providing methods to load and access various parameters from the `config.ini` file.
@@ -48,7 +49,7 @@ Provides functions for grouping and collapsing firewall rules based on various c
 ### generate_xl_output.py
 The main entry point of the application, orchestrating the overall flow of the program.
 
-### run_gui_interactive.py
+### run_gui.py
 Implements a graphical user interface for inputting network information and loading data from JSON files.
 
 ### subnetfirewallmapper.py
@@ -78,7 +79,7 @@ The project uses a `config.ini` file to manage settings for different customers 
 
 ## Usage
 
-1. Run `main.py` to start the application.
+1. Run `run_gui.py` to start the application.
 2. Use the GUI to input network information or load data from a JSON file.
 3. The program will process the input, analyze firewall diagrams, and generate Excel reports and visual diagrams.
 
@@ -90,22 +91,10 @@ The project uses a `config.ini` file to manage settings for different customers 
 - tkinter
 - openpyxl
 - PyYAML
-- Additional requirements may be needed (consider adding a `requirements.txt` file)
 
 ## Installation
 
 1. Clone the repository
 2. Install required dependencies: pip install -r requirements.txt
-3. Configure the `config.ini` file with appropriate settings for your environment
-
-## License
-
-(To be added if applicable)
-
-## Contributing
-
-(Add guidelines for contributing to the project, if desired)
-
-## Support
-
-(Add information on how to get support or report issues)
+3. Rename `config_template.ini` to `config.ini`
+4. Configure the `config.ini` file with appropriate settings for your environment
