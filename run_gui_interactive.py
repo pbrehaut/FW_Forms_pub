@@ -3,6 +3,7 @@ from tkinter import ttk, messagebox, Text, filedialog
 import json
 import generate_xls_diagrams
 from configmanager import ConfigManager
+import configparser
 
 # Global variable for config file
 CONFIG_FILE = 'config.ini'
@@ -143,6 +144,12 @@ class NetworkInfoGUI:
         # Add a "Back" button
         back_button = ttk.Button(button_frame, text="Back", command=self.go_back_to_initial_form)
         back_button.pack(side=tk.LEFT, padx=5)
+
+        # Add an "Options" button
+        options_button = ttk.Button(button_frame, text="Options",
+                                    command=lambda: self.edit_excel_form(self.selected_customer.get() + ".EXCEL",
+                                                                    CONFIG_FILE))
+        options_button.pack(side=tk.LEFT, padx=5)
 
         # Submit Button (now in button_frame)
         self.submit_button = ttk.Button(button_frame, text="Submit", command=self.submit_results)
@@ -345,6 +352,42 @@ class NetworkInfoGUI:
     def clear_input_fields(self):
         for text in self.input_fields.values():
             text.delete("1.0", tk.END)
+
+    def edit_excel_form(self, section, config_file):
+        config = configparser.ConfigParser()
+        config.read(config_file)
+
+        # Create a new window for editing the section
+        edit_window = tk.Toplevel(self.master)
+        edit_window.title(f"Edit {section} Section")
+
+        # Define a dictionary to hold the tkinter variables
+        var_dict = {}
+
+        # Add widgets for each option in the section
+        for i, (option, value) in enumerate(config[section].items()):
+            label = tk.Label(edit_window, text=option)
+            label.grid(row=i, column=0, padx=10, pady=5, sticky="e")
+
+            if option in ["group_gateways", "detailed_diagrams", "include_flow_count"]:
+                var_dict[option] = tk.StringVar(value=value)
+                option_menu = ttk.Combobox(edit_window, textvariable=var_dict[option], values=["yes", "no"])
+                option_menu.grid(row=i, column=1, padx=10, pady=5)
+            else:
+                var_dict[option] = tk.StringVar(value=value)
+                entry = tk.Entry(edit_window, textvariable=var_dict[option])
+                entry.grid(row=i, column=1, padx=10, pady=5)
+
+        # Save button
+        def save_changes():
+            for option, var in var_dict.items():
+                config[section][option] = var.get()
+            with open(config_file, 'w') as configfile:
+                config.write(configfile)
+            edit_window.destroy()
+
+        save_button = tk.Button(edit_window, text="Save", command=save_changes)
+        save_button.grid(row=len(config[section]), column=0, columnspan=2, pady=10)
 
 
 def run_gui():
