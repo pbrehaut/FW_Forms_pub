@@ -23,6 +23,7 @@ class NetworkInfoGUI:
         self.results = {}
         self.selected_customer = tk.StringVar()
         self.file_path = tk.StringVar()
+        self.template_dir = topology.get_files_config(self.selected_customer.get())['template_directory']
 
         # Initial Form
         self.create_initial_form()
