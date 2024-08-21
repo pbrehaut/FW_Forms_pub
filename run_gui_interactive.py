@@ -287,7 +287,6 @@ class NetworkInfoGUI:
         # Set focus to the result window so it can receive keyboard events
         result_window.focus_set()
 
-
     def submit_results(self):
         self.results[self.selected_customer.get()] = [self.tree.item(item)["values"] for item in
                                                       self.tree.get_children()]

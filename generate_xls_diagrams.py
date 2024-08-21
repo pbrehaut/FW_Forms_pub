@@ -77,6 +77,14 @@ def generate_output(cust_rules, config_mgr):
     else:
         detailed_diagrams = True
 
+    #  Get the group_gateways value
+    #  this will determine whether the rules are regrouped again and the gateways concatenated
+    group_gateways = excel_headers.pop('group_gateways', 'no')
+    if group_gateways.lower() == 'no':
+        group_gateways = False
+    else:
+        group_gateways = True
+
     #  Print out the flow count subheading when outputting the rules
     inc_flow_count = excel_headers.pop('include_flow_count', 'no')
     if inc_flow_count.lower() == 'no':
@@ -202,6 +210,8 @@ def generate_output(cust_rules, config_mgr):
     }
 
     if rows_to_output:
+        if group_gateways:
+            rows_to_output = group_and_concat_gateways(rows_to_output)
         xlsx_file = join(config_mgr.get_output_directory(cust), "excel_fw_forms", f"FW_Req_{cust}_{datetime_for_filename()}.xlsx")
         write_to_excel(rows_to_output, excel_headers, field_mapping,
                        filename=xlsx_file,
@@ -214,7 +224,7 @@ def generate_output(cust_rules, config_mgr):
 
 if __name__ == "__main__":
     config_mgr = ConfigManager('config.ini')
-    TEST_DATA = 'filename.json'
+    TEST_DATA = r'C:\Users\pbrehaut4\PycharmProjects\FW_Forms_pub\OutputTest\json_rule_dumps\TEST_21_Aug_24_13-26-23.json'
     with open(TEST_DATA, 'r') as file:
         cust_rules = json.load(file)
         x_str = generate_output(cust_rules, config_mgr)

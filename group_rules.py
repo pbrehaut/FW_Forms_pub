@@ -1,5 +1,22 @@
 from collections import defaultdict
 
+
+def group_and_concat_gateways(data):
+    grouped_data = {}
+
+    for item in data:
+        key = item[:6]  # The first five fields are used as the key
+        if key in grouped_data:
+            grouped_data[key] += "\n" + item[6]  # Concatenate the seventh field
+        else:
+            grouped_data[key] = item[6]  # Initialize with the seventh field
+
+    # Convert the grouped data back to a list of tuples
+    result = [(key[0], key[1], key[2], key[3], key[4], key[5], grouped_data[key]) for key in grouped_data]
+
+    return result
+
+
 def group_and_collapse(data):
     # Initial grouping and collapsing
     initial_result = defaultdict(list)
