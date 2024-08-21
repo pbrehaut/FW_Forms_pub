@@ -373,6 +373,9 @@ class NetworkInfoGUI:
         config = configparser.ConfigParser()
         config.read(config_file)
 
+        # Refresh config manager with updated file
+        self.topology = ConfigManager(CONFIG_FILE)
+
         # Create a new window for editing the section
         edit_window = tk.Toplevel(self.master)
         edit_window.title(f"Edit {section} Section")
@@ -394,7 +397,7 @@ class NetworkInfoGUI:
                 var_dict[option] = tk.StringVar(value=value)
                 option_menu = ttk.Combobox(edit_window, textvariable=var_dict[option], values=files, width=40)
                 option_menu.grid(row=i, column=1, padx=10, pady=5)
-            elif option in ["group_gateways", "detailed_diagrams", "include_flow_count"]:
+            elif option in ["group_gateways", "detailed_diagrams", "include_flow_count", "output_headers"]:
                 var_dict[option] = tk.StringVar(value=value)
                 option_menu = ttk.Combobox(edit_window, textvariable=var_dict[option], values=["yes", "no"])
                 option_menu.grid(row=i, column=1, padx=10, pady=5)
