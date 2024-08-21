@@ -62,5 +62,6 @@ class ConfigManager:
     def get_template_file(self, customer):
         files_config = self.get_files_config(customer)
         if files_config and 'template_filename' in files_config:
-            return files_config['template_filename']
+            if not files_config['template_filename'].lower().endswith('none'):
+                return files_config['template_filename']
         return None
