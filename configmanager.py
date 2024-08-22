@@ -26,7 +26,7 @@ class ConfigManager:
         if subkey:
             section = f"{customer}.TOPOLOGIES.{subkey}"
             if section in self.config:
-                return {k: os.path.join(topology_directory, v) for k, v in self.config[section].items()}
+                return {k: os.path.join(topology_directory, v) for k, v in self.config[section].items() if v!='None'}
         else:
             result = {}
             for section in self.config.sections():

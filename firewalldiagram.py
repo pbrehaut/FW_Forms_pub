@@ -42,21 +42,6 @@ class FirewallDiagram:
                     unique_paths.add(tuple(path))
         return unique_paths
 
-    # def find_flows_with_firewalls(self, fw1, fw2):
-    #     paths = self.find_all_paths(fw1, fw2)
-    #     matching_paths = []
-    #     for path in paths:
-    #         if (path[0] == fw1 and path[-1] == fw2) or (path[0] == fw2 and path[-1] == fw1):
-    #             matching_paths.append(set(path))
-    #     return matching_paths
-
-    # def find_flows_with_firewalls(self, fw1, fw2):
-    #     paths = self.find_all_paths(fw1, fw2)
-    #     matching_paths = []
-    #     for path in paths:
-    #         if (path[0] == fw1 and path[-1] == fw2) or (path[0] == fw2 and path[-1] == fw1):
-    #             matching_paths.append(OrderedSet(path))
-    #     return matching_paths
     def find_flows_with_firewalls(self, fw1, fw2):
         paths = self.find_all_paths(fw1, fw2)
         matching_paths = []

@@ -1,7 +1,0 @@
-flowchart LR
-MGMT_FW <--> FW1
-MGMT_FW <--> FW2
-MGMT_FW <--> FW3
-MGMT_FW <--> FW4
-MGMT_FW <--> AZURE
-MGMT_FW <--> AWS

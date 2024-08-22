@@ -224,7 +224,7 @@ def generate_output(cust_rules, config_mgr):
 
 if __name__ == "__main__":
     config_mgr = ConfigManager('config.ini')
-    TEST_DATA = r'C:\Users\pbrehaut4\PycharmProjects\FW_Forms_pub\TEST_15_Aug_24_12-16-19.json'
+    TEST_DATA = r'C:\Users\pbrehaut4\PycharmProjects\FW_Forms_pub\OutputTest\json_rule_dumps\TEST_Data.json'
     with open(TEST_DATA, 'r') as file:
         cust_rules = json.load(file)
         x_str = generate_output(cust_rules, config_mgr)

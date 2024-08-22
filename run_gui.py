@@ -1,6 +1,6 @@
 import os
 import tkinter as tk
-from tkinter import ttk, messagebox, Text, filedialog
+from tkinter import ttk, messagebox, Text, filedialog, simpledialog
 import json
 import generate_xls_diagrams
 from configmanager import ConfigManager
@@ -105,6 +105,9 @@ class NetworkInfoGUI:
 
         self.render_button = tk.Button(self.master, text="Render Diagrams", command=self.render_diagrams)
         self.render_button.pack(pady=5)
+
+        self.modify_config_button = tk.Button(self.master, text="Modify Config", command=self.modify_config)
+        self.modify_config_button.pack(pady=5)
 
     def create_manual_input_form(self):
         #  Reset self.results to an empty dictionary
@@ -417,6 +420,73 @@ class NetworkInfoGUI:
         save_button = tk.Button(edit_window, text="Save", command=save_changes)
         save_button.grid(row=len(config[section]), column=0, columnspan=2, pady=10)
 
+    def modify_config(self):
+        config = configparser.ConfigParser()
+        if os.path.exists(CONFIG_FILE):
+            config.read(CONFIG_FILE)
+
+        customer = simpledialog.askstring("Input", "Enter customer name:")
+        if not customer:
+            return
+
+        if customer not in config:
+            config[customer] = {}
+
+        files_section = f"{customer}.FILES"
+        if files_section not in config:
+            config[files_section] = {}
+
+        config[files_section]['template_filename'] = 'None'
+
+        for dir_type in ['topology_directory', 'template_directory', 'output_directory']:
+            dir_path = filedialog.askdirectory(title=f"Select {dir_type.replace('_', ' ')} for {customer}")
+            if dir_path:
+                config[files_section][dir_type] = dir_path
+            else:
+                config[files_section][dir_type] = 'None'
+
+        topologies = []
+        while True:
+            topology = simpledialog.askstring("Input", f"Enter topology name for {customer} (or cancel to finish):")
+            if not topology:
+                break
+
+            topology_data = {'name': topology, 'files': {}}
+            for file_type in ['subnets', 'routes', 'topology']:
+                file_path = filedialog.askopenfilename(title=f"Select {file_type} file for {topology}")
+                if file_path:
+                    topology_data['files'][file_type] = os.path.basename(file_path)
+                else:
+                    topology_data['files'][file_type] = 'None'
+            topologies.append(topology_data)
+
+        if topologies:
+            config[f"{customer}.TOPOLOGIES"] = {}
+            for topology in topologies:
+                topology_section = f"{customer}.TOPOLOGIES.{topology['name']}"
+                config[topology_section] = topology['files']
+
+        # Add EXCEL section with predefined options
+        excel_section = f"{customer}.EXCEL"
+        config[excel_section] = {
+            'group_gateways': 'yes',
+            'detailed_diagrams': 'no',
+            'include_flow_count': 'no',
+            'output_headers': 'yes',
+            'acl_sheet': 'ACL',
+            'start_row': '2',
+            'source_ips': 'A',
+            'destination_ips': 'B',
+            'services': 'C',
+            'comments': 'D',
+            'gateway': 'E',
+            'topology': 'F'
+        }
+
+        with open(CONFIG_FILE, 'w') as configfile:
+            config.write(configfile)
+
+        messagebox.showinfo("Success", "Config file updated successfully!")
 
 def run_gui():
     root = tk.Tk()
