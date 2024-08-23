@@ -227,7 +227,7 @@ class NetworkInfoGUI:
         if first_field:
             self.master.after(100, lambda: first_field.focus_set())
 
-        self.master.bind("<Return>", lambda event: self.submit_results())
+        #self.master.bind("<Return>", lambda event: self.submit_results())
 
     def bind_tab_navigation(self):
         def focus_next_widget(event):
@@ -437,21 +437,37 @@ class NetworkInfoGUI:
             return
 
         if customer not in config:
+            # New customer: proceed with full configuration
             config[customer] = {}
-
-        files_section = f"{customer}.FILES"
-        if files_section not in config:
+            files_section = f"{customer}.FILES"
             config[files_section] = {}
+            config[files_section]['template_filename'] = 'None'
 
-        config[files_section]['template_filename'] = 'None'
+            for dir_type in ['topology_directory', 'template_directory', 'output_directory']:
+                dir_path = filedialog.askdirectory(title=f"Select {dir_type.replace('_', ' ')} for {customer}")
+                if dir_path:
+                    config[files_section][dir_type] = dir_path
+                else:
+                    config[files_section][dir_type] = 'None'
 
-        for dir_type in ['topology_directory', 'template_directory', 'output_directory']:
-            dir_path = filedialog.askdirectory(title=f"Select {dir_type.replace('_', ' ')} for {customer}")
-            if dir_path:
-                config[files_section][dir_type] = dir_path
-            else:
-                config[files_section][dir_type] = 'None'
+            # Add EXCEL section with predefined options
+            excel_section = f"{customer}.EXCEL"
+            config[excel_section] = {
+                'group_gateways': 'yes',
+                'detailed_diagrams': 'no',
+                'include_flow_count': 'no',
+                'output_headers': 'yes',
+                'acl_sheet': 'ACL',
+                'start_row': '2',
+                'source_ips': 'A',
+                'destination_ips': 'B',
+                'services': 'C',
+                'comments': 'D',
+                'gateway': 'E',
+                'topology': 'F'
+            }
 
+        # Always prompt for topology, whether it's a new or existing customer
         topologies = []
         while True:
             topology = simpledialog.askstring("Input", f"Enter topology name for {customer} (or cancel to finish):")
@@ -468,27 +484,11 @@ class NetworkInfoGUI:
             topologies.append(topology_data)
 
         if topologies:
-            config[f"{customer}.TOPOLOGIES"] = {}
+            if f"{customer}.TOPOLOGIES" not in config:
+                config[f"{customer}.TOPOLOGIES"] = {}
             for topology in topologies:
                 topology_section = f"{customer}.TOPOLOGIES.{topology['name']}"
                 config[topology_section] = topology['files']
-
-        # Add EXCEL section with predefined options
-        excel_section = f"{customer}.EXCEL"
-        config[excel_section] = {
-            'group_gateways': 'yes',
-            'detailed_diagrams': 'no',
-            'include_flow_count': 'no',
-            'output_headers': 'yes',
-            'acl_sheet': 'ACL',
-            'start_row': '2',
-            'source_ips': 'A',
-            'destination_ips': 'B',
-            'services': 'C',
-            'comments': 'D',
-            'gateway': 'E',
-            'topology': 'F'
-        }
 
         with open(CONFIG_FILE, 'w') as configfile:
             config.write(configfile)
