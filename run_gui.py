@@ -58,7 +58,7 @@ class NetworkInfoGUI:
         messagebox.showinfo("Rendering Complete", "Diagrams have been rendered successfully.")
 
     def create_initial_form(self):
-        self.master.geometry("400x500")
+        self.master.geometry("400x600")
         # File Selection Section
         self.file_label = tk.Label(self.master, text="Load from File", font=("Arial", 12, "bold"))
         self.file_label.pack(pady=(20, 10))
@@ -113,7 +113,12 @@ class NetworkInfoGUI:
         self.render_button = tk.Button(self.master, text="Render Diagrams", command=self.render_diagrams)
         self.render_button.pack(pady=5)
 
-        self.modify_config_button = tk.Button(self.master, text="Modify Config", command=self.modify_config)
+        # Separator
+        self.separator3 = ttk.Separator(self.master, orient='horizontal')
+        self.separator3.pack(fill='x', pady=20)
+
+
+        self.modify_config_button = tk.Button(self.master, text="Add/Modify\nCustomers/Topologies", command=self.modify_config)
         self.modify_config_button.pack(pady=5)
 
     def create_manual_input_form(self):
