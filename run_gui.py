@@ -24,10 +24,17 @@ class NetworkInfoGUI:
         self.results = {}
         self.selected_customer = tk.StringVar()
         self.file_path = tk.StringVar()
-
+        self.customer_combo = None
 
         # Initial Form
         self.create_initial_form()
+
+    def refresh_customers(self):
+        self.topology = ConfigManager(CONFIG_FILE)
+        self.customers = self.topology.get_customers()
+        self.customer_combo['values'] = list(self.customers)
+        if self.selected_customer.get() not in self.customers:
+            self.selected_customer.set('')
 
     def go_back_to_initial_form(self):
         # Clear the manual input form
@@ -487,6 +494,10 @@ class NetworkInfoGUI:
             config.write(configfile)
 
         messagebox.showinfo("Success", "Config file updated successfully!")
+
+        # Refresh the customer list and combo box
+        self.refresh_customers()
+
 
 def run_gui():
     root = tk.Tk()
