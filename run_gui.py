@@ -29,6 +29,43 @@ class NetworkInfoGUI:
         # Initial Form
         self.create_initial_form()
 
+    def edit_config_file(self):
+        # Read the current contents of the config file
+        with open(CONFIG_FILE, 'r') as file:
+            content = file.read()
+
+        # Create a new top-level window
+        edit_window = tk.Toplevel(self.master)
+        edit_window.title("Edit Config File")
+        edit_window.geometry("700x600")
+
+        # Create a Text widget with a scrollbar
+        text_frame = tk.Frame(edit_window)
+        text_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+
+        text_widget = Text(text_frame, wrap=tk.NONE)
+        text_widget.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+        scrollbar = ttk.Scrollbar(text_frame, orient="vertical", command=text_widget.yview)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+
+        text_widget.config(yscrollcommand=scrollbar.set)
+
+        # Insert the content into the Text widget
+        text_widget.insert(tk.END, content)
+
+        # Function to save the changes
+        def save_changes():
+            new_content = text_widget.get("1.0", tk.END)
+            with open(CONFIG_FILE, 'w') as file:
+                file.write(new_content)
+            messagebox.showinfo("Success", "Config file updated successfully")
+            edit_window.destroy()
+
+        # Add a save button
+        save_button = tk.Button(edit_window, text="Save Changes", command=save_changes)
+        save_button.pack(pady=10)
+
     def refresh_customers(self):
         self.topology = ConfigManager(CONFIG_FILE)
         self.customers = self.topology.get_customers()
@@ -117,9 +154,15 @@ class NetworkInfoGUI:
         self.separator3 = ttk.Separator(self.master, orient='horizontal')
         self.separator3.pack(fill='x', pady=20)
 
+        button_frame = tk.Frame(self.master)
+        button_frame.pack(pady=5)
 
-        self.modify_config_button = tk.Button(self.master, text="Add/Modify\nCustomers/Topologies", command=self.modify_config)
-        self.modify_config_button.pack(pady=5)
+        self.modify_config_button = tk.Button(button_frame, text="Add/Modify\nCustomers/Topologies",
+                                              command=self.modify_config)
+        self.modify_config_button.pack(side=tk.LEFT, padx=5)
+
+        self.edit_config_button = tk.Button(button_frame, text=f"Edit Config File:\n{CONFIG_FILE}", command=self.edit_config_file)
+        self.edit_config_button.pack(side=tk.LEFT, padx=5)
 
     def create_manual_input_form(self):
         #  Reset self.results to an empty dictionary
