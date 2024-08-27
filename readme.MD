@@ -24,9 +24,9 @@ The project consists of multiple Python modules and a configuration file:
 ### combine_diagrams.py
 Contains a function to process and combine tuple fields from input data, removing duplicates while preserving order.
 
-### config_template.ini
+### config.ini
 The configuration file for the project, containing settings for different customers, topology information, Excel configuration, and file paths.
-Customise this and rename to config.ini
+Use the GUI to initialise this and add customers and topologies.
 
 ### configmanager.py
 A class for managing the configuration settings, providing methods to load and access various parameters from the `config.ini` file.
@@ -51,6 +51,7 @@ The main entry point of the application, orchestrating the overall flow of the p
 
 ### run_gui.py
 Implements a graphical user interface for inputting network information and loading data from JSON files.
+Has options for configuring the config file and editing the config file. Allow the user to re-render graphviz diagrams if they have been modified manually.
 
 ### subnetfirewallmapper.py
 Maps subnets to firewalls using YAML configuration files and route dump information.
@@ -79,9 +80,12 @@ The project uses a `config.ini` file to manage settings for different customers 
 
 ## Usage
 
-1. Run `run_gui.py` to start the application.
-2. Use the GUI to input network information or load data from a JSON file.
-3. The program will process the input, analyze firewall diagrams, and generate Excel reports and visual diagrams.
+1. Define your topology using a flowchart to depict the network and YAML files to define what subnets are behind what firewalls or zones. See the sample files provided: topology_test.txt, subnets_test.txt
+2. Run `run_gui.py` to start the application.
+3. Click add customer/topology to initialise the config file.
+4. Use the GUI to input network information or load data from a JSON file.
+5. The program will process the input, analyze firewall diagrams, and generate Excel reports and visual diagrams.
+
 
 ## Requirements
 
@@ -96,6 +100,5 @@ The project uses a `config.ini` file to manage settings for different customers 
 
 1. Clone the repository
 2. Install required dependencies: pip install -r requirements.txt
-3. Rename `config_template.ini` to `config.ini`
-4. Configure the `config.ini` file with appropriate settings for your environment
-5. Install Graphviz application to you local host to render diagrams
+3. Configure the `config.ini` file with appropriate settings for your environment. Use the GUI initially to load in all the parameters required. Manual editing of the config.ini file can be done via the GUI after it is initialised.
+4. Install Graphviz application to you local host to render diagrams
