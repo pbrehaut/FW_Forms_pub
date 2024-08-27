@@ -153,7 +153,9 @@ def generate_output(cust_rules, config_mgr):
                     continue
 
                 flow = diagram.find_flows_with_firewalls(src_fw, dst_fw)
-                rule_src_dst_permutations.append(((src_ip, dst_ip), topology_name, flow[0]))
+                #  Pick the minimum length flow i.e. the shortest path in the topology
+                flow = min(flow, key=len)
+                rule_src_dst_permutations.append(((src_ip, dst_ip), topology_name, flow))
 
         rule_src_dst_permutations = transform_network_data(rule_src_dst_permutations)
 
