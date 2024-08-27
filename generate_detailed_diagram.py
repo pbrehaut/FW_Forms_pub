@@ -86,7 +86,6 @@ def create_graphviz_diagram(flow, ip_tuples, image_filename, src_filename):
         dot.edge(flow[-1], dst_node, label='dst', color=color)
 
     try:
-        #raise Exception("Not rendering diagram")
         diagram_file = dot.render(image_filename, view=False, cleanup=True, format="png")
     except Exception as e:
         print(f"Error rendering diagram: {e}")
