@@ -85,7 +85,12 @@ def create_graphviz_diagram(flow, ip_tuples, image_filename, src_filename):
         # Connect last firewall to destination IP
         dot.edge(flow[-1], dst_node, label='dst', color=color)
 
-    diagram_file = dot.render(image_filename, view=False, cleanup=True, format="png")
+    try:
+        #raise Exception("Not rendering diagram")
+        diagram_file = dot.render(image_filename, view=False, cleanup=True, format="png")
+    except Exception as e:
+        print(f"Error rendering diagram: {e}")
+        diagram_file = None
 
     # Write a copy of the diagram text as well to a file
     with open(src_filename + '.txt', "w") as f:

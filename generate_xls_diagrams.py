@@ -192,13 +192,19 @@ def generate_output(cust_rules, config_mgr):
                 image_filename=diagram_image_file_name,
                 src_filename=diagram_src_file_name
             )
-            diagram_files.append(join(config_mgr.get_output_directory(cust), diagram_file))
+            if diagram_file:
+                diagram_files.append(join(config_mgr.get_output_directory(cust), diagram_file))
     else:
         for path, path_rules in combine_tuple_fields(rules_diagrams):
             diagram_image_file_name = join(config_mgr.get_output_directory(cust), "diagram_images", "_".join(path))
             diagram_src_file_name = join(config_mgr.get_output_directory(cust), "diagram_source_files", "_".join(path))
-            diagram_file = generate_diagram.create_graphviz_diagram(path, *path_rules, image_filename=diagram_image_file_name, src_filename=diagram_src_file_name)
-            diagram_files.append(join(config_mgr.get_output_directory(cust), diagram_file))
+            diagram_file = generate_diagram.create_graphviz_diagram(
+                path, *path_rules,
+                image_filename=diagram_image_file_name,
+                src_filename=diagram_src_file_name
+            )
+            if diagram_file:
+                diagram_files.append(join(config_mgr.get_output_directory(cust), diagram_file))
 
     field_mapping = {
         'comments': 3,
