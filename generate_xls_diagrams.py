@@ -122,6 +122,8 @@ def generate_output(cust_rules, config_mgr):
         # Initialise a dictionary for the mapping of IP addresses to the original content of the rule for that IP
         ip_full_text_mapping = {}
         src, dst, port, comment = rule
+        # Preserve original text entered
+        src_text, dst_text = src, dst
         # swap back in newline to comments
         comment = comment.replace('; ', '\n')
         src_ips, text_map1 = find_ip_addresses(src)
@@ -180,8 +182,8 @@ def generate_output(cust_rules, config_mgr):
             dst_list = [(ip_full_text_mapping.get(ip, ip), fc) for ip, fc in dst_list]
 
             # Add headings back in
-            src_headings = ip_headings.map_ip_to_heading(src)
-            dst_headings = ip_headings.map_ip_to_heading(dst)
+            src_headings = ip_headings.map_ip_to_heading(src_text)
+            dst_headings = ip_headings.map_ip_to_heading(dst_text)
 
             src_headings_ip = defaultdict(list)
             dst_headings_ip = defaultdict(list)

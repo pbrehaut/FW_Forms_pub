@@ -26,8 +26,11 @@ def map_ip_to_heading(text):
             line_n += 1
 
     # Reverse the headings_ips dictionary
-    headings_ips = {v: k for k, v in headings_ips.items()}
-    return headings_ips
+    ips_headings = {}
+    for heading, ips in headings_ips.items():
+        for ip in ips:
+            ips_headings[ip] = heading
+    return ips_headings
 
 
 if __name__ == '__main__':
