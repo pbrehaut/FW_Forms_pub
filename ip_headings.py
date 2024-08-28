@@ -25,6 +25,8 @@ def map_ip_to_heading(text):
                 headings_ips[current_heading.strip()].extend(sections)
             line_n += 1
 
+    # Reverse the headings_ips dictionary
+    headings_ips = {v: k for k, v in headings_ips.items()}
     return headings_ips
 
 

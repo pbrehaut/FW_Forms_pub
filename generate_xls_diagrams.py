@@ -12,6 +12,7 @@ import generate_diagram
 import generate_detailed_diagram
 from combine_diagrams import combine_tuple_fields
 import os
+import ip_headings
 
 
 def create_subdirectories(base_dir):
@@ -178,6 +179,20 @@ def generate_output(cust_rules, config_mgr):
             src_list = [(ip_full_text_mapping.get(ip, ip), fc) for ip, fc in src_list]
             dst_list = [(ip_full_text_mapping.get(ip, ip), fc) for ip, fc in dst_list]
 
+            # Add headings back in
+            src_headings = ip_headings.map_ip_to_heading(src)
+            dst_headings = ip_headings.map_ip_to_heading(dst)
+
+            src_headings_ip = defaultdict(list)
+            dst_headings_ip = defaultdict(list)
+
+            for ip, _ in src_list:
+                src_headings_ip[src_headings[ip]].append(ip)
+
+            for ip, _ in dst_list:
+                dst_headings_ip[dst_headings[ip]].append(ip)
+
+
             src_str = format_ips(src_list, inc_flow_count)
             dst_str = format_ips(dst_list, inc_flow_count)
 
@@ -232,7 +247,7 @@ def generate_output(cust_rules, config_mgr):
 
 if __name__ == "__main__":
     config_mgr = ConfigManager('config.ini')
-    TEST_DATA = r'C:\Users\pbrehaut4\PycharmProjects\FW_Forms_pub\Test_data\TEST_Data.json'
+    TEST_DATA = r'C:\Users\pbrehaut4\PycharmProjects\FW_Forms_pub\BOQ\Output\json_rule_dumps\BOQ_28_Aug_24_14-52-18.json'
     with open(TEST_DATA, 'r') as file:
         cust_rules = json.load(file)
         x_str = generate_output(cust_rules, config_mgr)
