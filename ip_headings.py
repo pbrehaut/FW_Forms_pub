@@ -27,29 +27,31 @@ def map_ip_to_heading(text):
 
     return headings_ips
 
-# Example usage
-text = """
 
-10.1.1.1
-10.1.1.2,  10.1.1.3
+if __name__ == '__main__':
+    # Example usage
+    text = """
+    
+    10.1.1.1
+    10.1.1.2,  10.1.1.3
+    
+    Cisco Aurora ASR branch routers
+    Hostname: boznescr01c10 
+    10.162.248.2/32
+    10.162.238.68/30
+    
+    ISE Admin
+    P-DMZ_WAN-ISE-10.180.128.145_29
+    ISE Monitoring
+    P-inb-ISE_Monitoring-10.192.70.65_28
+    Zscaler App Connector:
+    P-DMZ_BIN-Zscaler-10.182.35.97_28,  10.182.35.98_28, 10.182.35.99_28, 10.182.35.100_28, 10.182.35.101_28
+    P-DMZ_BIN-Zscaler_Whitelist-10.182.35.113_28; 10.182.35.114_28; 10.182.35.115_28; 10.182.35.116_28; 10.182.35.117_28
+    P-DMZ_B2B-Zscaler_Partners-10.181.2.17_28
+    
+    10.162.249.2/32
+    10.162.239.68/30
+    """
 
-Cisco Aurora ASR branch routers
-Hostname: boznescr01c10 
-10.162.248.2/32
-10.162.238.68/30
-
-ISE Admin
-P-DMZ_WAN-ISE-10.180.128.145_29
-ISE Monitoring
-P-inb-ISE_Monitoring-10.192.70.65_28
-Zscaler App Connector:
-P-DMZ_BIN-Zscaler-10.182.35.97_28,  10.182.35.98_28, 10.182.35.99_28, 10.182.35.100_28, 10.182.35.101_28
-P-DMZ_BIN-Zscaler_Whitelist-10.182.35.113_28; 10.182.35.114_28; 10.182.35.115_28; 10.182.35.116_28; 10.182.35.117_28
-P-DMZ_B2B-Zscaler_Partners-10.181.2.17_28
-
-10.162.249.2/32
-10.162.239.68/30
-"""
-
-result = map_ip_to_heading(text)
-pass
+    result = map_ip_to_heading(text)
+    pass
