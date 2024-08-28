@@ -1,27 +1,35 @@
 import re
+from collections import defaultdict
+
 
 def map_ip_to_heading(text):
     lines = text.split('\n')
     ip_pattern = re.compile(r'\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}(?:/[0-9]{1,3}|_[0-9]{1,3})?\b')
 
-    headings = []
-    for n, line in enumerate(lines):
-        current_heading = []
-        line = line.strip()
-        if not re.search(ip_pattern, line):
-            current_heading.append(line)
-            for i in range(n + 1, len(lines)):
-                next_line = lines[i].strip()
-                if re.search(ip_pattern, next_line):
+    headings_ips = defaultdict(list)
+    line_n = 0
+    current_heading = ''
+    while line_n < len(lines):
+        if not re.search(ip_pattern, lines[line_n].strip()):
+            line_heading_n = line_n
+            current_heading = ''
+            while line_heading_n < len(lines):
+                if re.search(ip_pattern, lines[line_heading_n].strip()):
                     break
-                current_heading.append(next_line)
-            headings.append(current_heading)
+                current_heading += lines[line_heading_n].strip() + '\n'
+                line_heading_n += 1
+            line_n = line_heading_n
+        else:
+            if re.search(ip_pattern, lines[line_n].strip()):
+                headings_ips[current_heading.strip()].append(lines[line_n].strip())
+            line_n += 1
 
-
-    return headings
+    return headings_ips
 
 # Example usage
-text = """
+text = """10.1.1.1
+10.1.1.2
+
 Cisco Aurora ASR branch routers
 Hostname: boznescr01c10 
 10.162.248.2/32
