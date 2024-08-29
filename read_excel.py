@@ -38,7 +38,8 @@ def process_excel():
 
     try:
         data = read_excel_data(file_path, customer, start_row, source_ips, dest_ips, services, comments)
-        print(data)  # You can process the data further or save it as needed
+        import json
+        print(json.dumps(data, indent=3))  # You can process the data further or save it as needed
         messagebox.showinfo("Success", "Data processed successfully!")
     except Exception as e:
         messagebox.showerror("Error", f"An error occurred: {str(e)}")
