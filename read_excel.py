@@ -1,6 +1,9 @@
 import tkinter as tk
-from tkinter import filedialog, messagebox
+from tkinter import filedialog, messagebox, ttk
 import openpyxl
+import configmanager
+
+CONFIG_FILE = 'config.ini'
 
 
 def read_excel_data(file_path, customer, sheet_name, start_row, source_ips, dest_ips, services, comments):
@@ -33,7 +36,7 @@ def process_excel():
     if not file_path:
         return
 
-    customer = customer_entry.get()
+    customer = customer_dropdown.get()
     sheet_name = sheet_entry.get()
     start_row = int(start_row_entry.get())
     source_ips = source_ips_entry.get()
@@ -50,14 +53,23 @@ def process_excel():
         messagebox.showerror("Error", f"An error occurred: {str(e)}")
 
 
+# Initialize the config manager
+config_mgr = configmanager.ConfigManager(CONFIG_FILE)
+
+# Get the customer list
+customers = config_mgr.get_customers()
+
 # Create the main window
 root = tk.Tk()
 root.title("Excel Data Processor")
 
 # Create and place widgets
 tk.Label(root, text="Customer:").grid(row=0, column=0, sticky="e", padx=5, pady=5)
-customer_entry = tk.Entry(root)
-customer_entry.grid(row=0, column=1, padx=5, pady=5)
+customer_var = tk.StringVar()
+customer_dropdown = ttk.Combobox(root, textvariable=customer_var, values=customers, state="readonly")
+customer_dropdown.grid(row=0, column=1, padx=5, pady=5)
+if customers:
+    customer_dropdown.set(customers[0])  # Set default value to the first customer
 
 tk.Label(root, text="Sheet Name (optional):").grid(row=1, column=0, sticky="e", padx=5, pady=5)
 sheet_entry = tk.Entry(root)
