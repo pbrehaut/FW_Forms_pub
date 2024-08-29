@@ -23,10 +23,7 @@ def transform_network_data(original_data):
     return new_data
 
 
-def format_ips(data, inc_flow_count=False):
-    if not inc_flow_count:
-        return '\n'.join(sorted(set([x for x, _ in data])))
-
+def format_ips(data):
     # Sort the data by the second element of each tuple
     sorted_data = sorted(data, key=itemgetter(1))
 
@@ -42,3 +39,13 @@ def format_ips(data, inc_flow_count=False):
 
     # Join all elements with newline characters
     return '\n'.join(result)
+
+
+def format_ips_headings(data):
+    new_str = ''
+    for index, (heading, ips) in enumerate(data.items()):
+        new_str += f"{heading}\n"
+        new_str += '\n'.join(sorted(set([str(ip) for ip in ips])))
+        if index < len(data) - 1:
+            new_str += '\n\n'
+    return new_str

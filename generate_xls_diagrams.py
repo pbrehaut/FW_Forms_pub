@@ -193,9 +193,12 @@ def generate_output(cust_rules, config_mgr):
             for ip, _ in dst_list:
                 dst_headings_ip[dst_headings[ip]].append(ip)
 
-
-            src_str = format_ips(src_list, inc_flow_count)
-            dst_str = format_ips(dst_list, inc_flow_count)
+            if inc_flow_count:
+                src_str = format_ips(src_list, inc_flow_count)
+                dst_str = format_ips(dst_list, inc_flow_count)
+            else:
+                src_str = format_ips_headings(src_headings_ip)
+                dst_str = format_ips_headings(dst_headings_ip)
 
             paths_str = '\n'.join(paths_list)
             rows_to_output.append((src_str, dst_str, port, comment, topology, paths_str, install_on))
