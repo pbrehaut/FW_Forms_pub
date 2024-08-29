@@ -194,8 +194,8 @@ def generate_output(cust_rules, config_mgr):
                 dst_headings_ip[dst_headings[ip]].append(ip)
 
             if inc_flow_count:
-                src_str = format_ips(src_list, inc_flow_count)
-                dst_str = format_ips(dst_list, inc_flow_count)
+                src_str = format_ips(src_list)
+                dst_str = format_ips(dst_list)
             else:
                 src_str = format_ips_headings(src_headings_ip)
                 dst_str = format_ips_headings(dst_headings_ip)
