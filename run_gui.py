@@ -57,7 +57,7 @@ class NetworkInfoGUI:
     def read_excel_form(self):
         excel_window = tk.Toplevel(self.master)
         excel_window.title("Read Excel Data")
-        excel_window.geometry("400x300")
+        excel_window.geometry("300x500")
 
         tk.Label(excel_window, text="Customer:").pack(pady=5)
         customer_var = tk.StringVar()
@@ -110,9 +110,7 @@ class NetworkInfoGUI:
 
             try:
                 self.results = self.read_excel_data(file_path, customer, sheet_name, start_row, source_ips, dest_ips, services, comments)
-                print(self.results)
                 messagebox.showinfo("Success", "Data processed successfully!")
-                #excel_window.destroy()
                 self.load_excel_to_manual_form()
             except Exception as e:
                 messagebox.showerror("Error", f"An error occurred: {str(e)}")
