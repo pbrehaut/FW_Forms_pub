@@ -1,0 +1,26 @@
+flowchart TD
+    A1[Excel File] --> B[User Input Form - Data Now Loaded]
+    A2[JSON File] --> B
+    A3[Manual User Input] -->|User Inputs Data Manually| B
+
+    B --> C{User Decision}
+    C -->|Clicks Options Button| D[Excel Output Options Form]
+    C -->|Clicks Template Button| E[Template Selection Form]
+    C -->|Clicks Submit Button| F[Process Rule Set]
+    F --> Save_Json[Save Data in Input Form to JSON File for Later Use]
+
+    D --> B
+    E -->|Template Selection or None| B
+    F --> G[Analyse/Split/Group Rules]
+    G --> H[Generate Graphviz Source]
+    H --> I{Graphviz Installed?}
+    
+    I -->|Yes| J[Generate Graphviz Images]
+    I -->|No| K{Excel Template Specified?}
+    
+    J --> K
+    K -->|Yes| L[Copy XLS Template]
+    K -->|No| M[Blank XLS]
+    L --> N[Populate New Rules Based on Excel Options]
+    M --> N
+    N --> O[Attach any Graphviz Images and Save Excel]
