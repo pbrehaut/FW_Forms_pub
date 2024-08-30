@@ -621,7 +621,8 @@ class NetworkInfoGUI:
                 'services': 'C',
                 'comments': 'D',
                 'gateway': 'E',
-                'topology': 'F'
+                'topology': 'F',
+                'paths': 'G'
             }
 
         # Always prompt for topology, whether it's a new or existing customer

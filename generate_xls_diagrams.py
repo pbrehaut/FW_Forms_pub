@@ -175,7 +175,7 @@ def generate_output(cust_rules, config_mgr):
             flow_count = 1
             for path, (src, dst, *_) in paths.items():
                 rules_diagrams[path].append((src, dst, f"{comment}, install on {install_on}, flow {flow_count}"))
-                path_joined = ' -> '.join(path)
+                path_joined = str(flow_count) + ': ' + ' -> '.join(path)
                 src_list.extend([(x, flow_count) for x in src])
                 dst_list.extend([(x, flow_count) for x in dst])
                 paths_list.append(path_joined)
@@ -233,7 +233,8 @@ def generate_output(cust_rules, config_mgr):
         'gateway': 6,
         'services': 2,
         'source_ips': 0,
-        'topology': 4
+        'topology': 4,
+        'paths': 5
     }
 
     if rows_to_output:
@@ -252,7 +253,7 @@ def generate_output(cust_rules, config_mgr):
 if __name__ == "__main__":
     config_mgr = ConfigManager('config.ini')
     TEST_DATA = r'C:\Users\pbrehaut4\PycharmProjects\FW_Forms_pub\Test_data\TEST_Data.json'
-    TEST_DATA = r'C:\Users\pbrehaut4\PycharmProjects\FW_Forms_pub\TEST\Output\json_rule_dumps\TEST_29_Aug_24_11-48-29.json'
+    #TEST_DATA = r'C:\Users\pbrehaut4\PycharmProjects\FW_Forms_pub\TEST\Output\json_rule_dumps\TEST_29_Aug_24_11-48-29.json'
     with open(TEST_DATA, 'r') as file:
         cust_rules = json.load(file)
         x_str = generate_output(cust_rules, config_mgr)
