@@ -5,6 +5,7 @@ import json
 import generate_xls_diagrams
 from configmanager import ConfigManager
 import configparser
+import openpyxl
 
 # Global variable for config file
 CONFIG_FILE = 'config.ini'
@@ -28,6 +29,98 @@ class NetworkInfoGUI:
 
         # Initial Form
         self.create_initial_form()
+
+    def read_excel_data(self, file_path, customer, sheet_name, start_row, source_ips, dest_ips, services, comments):
+        workbook = openpyxl.load_workbook(file_path)
+
+        if sheet_name and sheet_name in workbook.sheetnames:
+            sheet = workbook[sheet_name]
+        else:
+            sheet = workbook.active
+
+        data = {customer: []}
+
+        for row in sheet.iter_rows(min_row=start_row, values_only=True):
+            if all(cell is None or cell == "" for cell in row):
+                break
+
+            row_data = [
+                row[ord(source_ips.upper()) - 65],
+                row[ord(dest_ips.upper()) - 65],
+                row[ord(services.upper()) - 65],
+                row[ord(comments.upper()) - 65]
+            ]
+            data[customer].append(row_data)
+
+        return data
+
+    def read_excel_form(self):
+        excel_window = tk.Toplevel(self.master)
+        excel_window.title("Read Excel Data")
+        excel_window.geometry("400x300")
+
+        tk.Label(excel_window, text="Customer:").pack(pady=5)
+        customer_var = tk.StringVar()
+        customer_dropdown = ttk.Combobox(excel_window, textvariable=customer_var, values=self.customers, state="readonly")
+        customer_dropdown.pack(pady=5)
+        if self.customers:
+            customer_dropdown.set(self.customers[0])
+
+        tk.Label(excel_window, text="Sheet Name (optional):").pack(pady=5)
+        sheet_entry = tk.Entry(excel_window)
+        sheet_entry.pack(pady=5)
+
+        tk.Label(excel_window, text="Start Row:").pack(pady=5)
+        start_row_entry = tk.Entry(excel_window)
+        start_row_entry.pack(pady=5)
+        start_row_entry.insert(0, "2")
+
+        tk.Label(excel_window, text="Source IPs Column:").pack(pady=5)
+        source_ips_entry = tk.Entry(excel_window)
+        source_ips_entry.pack(pady=5)
+        source_ips_entry.insert(0, "A")
+
+        tk.Label(excel_window, text="Destination IPs Column:").pack(pady=5)
+        dest_ips_entry = tk.Entry(excel_window)
+        dest_ips_entry.pack(pady=5)
+        dest_ips_entry.insert(0, "B")
+
+        tk.Label(excel_window, text="Services Column:").pack(pady=5)
+        services_entry = tk.Entry(excel_window)
+        services_entry.pack(pady=5)
+        services_entry.insert(0, "C")
+
+        tk.Label(excel_window, text="Comments Column:").pack(pady=5)
+        comments_entry = tk.Entry(excel_window)
+        comments_entry.pack(pady=5)
+        comments_entry.insert(0, "D")
+
+        def process_excel():
+            file_path = filedialog.askopenfilename(filetypes=[("Excel files", "*.xlsx")])
+            if not file_path:
+                return
+
+            customer = customer_var.get()
+            sheet_name = sheet_entry.get()
+            start_row = int(start_row_entry.get())
+            source_ips = source_ips_entry.get()
+            dest_ips = dest_ips_entry.get()
+            services = services_entry.get()
+            comments = comments_entry.get()
+
+            try:
+                self.results = self.read_excel_data(file_path, customer, sheet_name, start_row, source_ips, dest_ips, services, comments)
+                print(self.results)
+                messagebox.showinfo("Success", "Data processed successfully!")
+                #excel_window.destroy()
+                self.load_excel_to_manual_form()
+            except Exception as e:
+                messagebox.showerror("Error", f"An error occurred: {str(e)}")
+
+        process_button = tk.Button(excel_window, text="Process Excel", command=process_excel)
+        process_button.pack(pady=10)
+
+
 
     def edit_config_file(self):
         # Read the current contents of the config file
@@ -94,6 +187,7 @@ class NetworkInfoGUI:
         render_diagrams_in_directory(self.stored_diagram_dir_path.get())
         messagebox.showinfo("Rendering Complete", "Diagrams have been rendered successfully.")
 
+
     def create_initial_form(self):
         self.master.geometry("400x600")
         # File Selection Section
@@ -111,6 +205,10 @@ class NetworkInfoGUI:
 
         self.load_button = tk.Button(self.master, text="Load JSON File", command=self.load_file)
         self.load_button.pack(pady=5)
+
+        # New Excel Load Button
+        self.load_excel_button = tk.Button(self.master, text="Load From Excel", command=self.read_excel_form)
+        self.load_excel_button.pack(pady=5)
 
         # Separator
         self.separator = ttk.Separator(self.master, orient='horizontal')
@@ -327,6 +425,21 @@ class NetworkInfoGUI:
         except IOError:
             messagebox.showerror("Error",
                                  "Could not read the file. Please check if the file exists and you have permission to read it.")
+
+
+    def load_excel_to_manual_form(self):
+
+        # Extract the customer key from the JSON data
+        customer_key = list(self.results.keys())[0]
+        self.selected_customer.set(customer_key)
+
+        # Remove initial form
+        for widget in self.master.winfo_children():
+            widget.destroy()
+
+        # Create and show manual input form
+        self.create_manual_input_form()
+
 
     def process_results(self):
         config_mgr = ConfigManager(CONFIG_FILE)

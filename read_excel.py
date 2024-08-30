@@ -1,10 +1,8 @@
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 import openpyxl
-import configmanager
 import json
 
-CONFIG_FILE = 'config.ini'
 
 def read_excel_data(file_path, customer, sheet_name, start_row, source_ips, dest_ips, services, comments):
     workbook = openpyxl.load_workbook(file_path)
@@ -30,7 +28,8 @@ def read_excel_data(file_path, customer, sheet_name, start_row, source_ips, dest
 
     return data
 
-def read_excel_form(root, config_mgr):
+def read_excel_form():
+
     def process_excel():
         file_path = filedialog.askopenfilename(filetypes=[("Excel files", "*.xlsx")])
         if not file_path:
@@ -51,59 +50,43 @@ def read_excel_form(root, config_mgr):
         except Exception as e:
             messagebox.showerror("Error", f"An error occurred: {str(e)}")
 
-    # Get the customer list
-    customers = config_mgr.get_customers()
-
     # Create and place widgets
-    tk.Label(root, text="Customer:").grid(row=0, column=0, sticky="e", padx=5, pady=5)
+    tk.Label(self.master, text="Customer:").grid(row=0, column=0, sticky="e", padx=5, pady=5)
     customer_var = tk.StringVar()
-    customer_dropdown = ttk.Combobox(root, textvariable=customer_var, values=customers, state="readonly")
+    customer_dropdown = ttk.Combobox(self.master, textvariable=customer_var, values=self.customers, state="readonly")
     customer_dropdown.grid(row=0, column=1, padx=5, pady=5)
-    if customers:
-        customer_dropdown.set(customers[0])  # Set default value to the first customer
+    if self.customers:
+        customer_dropdown.set(self.customers[0])  # Set default value to the first customer
 
-    tk.Label(root, text="Sheet Name (optional):").grid(row=1, column=0, sticky="e", padx=5, pady=5)
-    sheet_entry = tk.Entry(root)
+    tk.Label(self.master, text="Sheet Name (optional):").grid(row=1, column=0, sticky="e", padx=5, pady=5)
+    sheet_entry = tk.Entry(self.master)
     sheet_entry.grid(row=1, column=1, padx=5, pady=5)
 
-    tk.Label(root, text="Start Row:").grid(row=2, column=0, sticky="e", padx=5, pady=5)
-    start_row_entry = tk.Entry(root)
+    tk.Label(self.master, text="Start Row:").grid(row=2, column=0, sticky="e", padx=5, pady=5)
+    start_row_entry = tk.Entry(self.master)
     start_row_entry.grid(row=2, column=1, padx=5, pady=5)
     start_row_entry.insert(0, "2")
 
-    tk.Label(root, text="Source IPs Column:").grid(row=3, column=0, sticky="e", padx=5, pady=5)
-    source_ips_entry = tk.Entry(root)
+    tk.Label(self.master, text="Source IPs Column:").grid(row=3, column=0, sticky="e", padx=5, pady=5)
+    source_ips_entry = tk.Entry(self.master)
     source_ips_entry.grid(row=3, column=1, padx=5, pady=5)
     source_ips_entry.insert(0, "A")
 
-    tk.Label(root, text="Destination IPs Column:").grid(row=4, column=0, sticky="e", padx=5, pady=5)
-    dest_ips_entry = tk.Entry(root)
+    tk.Label(self.master, text="Destination IPs Column:").grid(row=4, column=0, sticky="e", padx=5, pady=5)
+    dest_ips_entry = tk.Entry(self.master)
     dest_ips_entry.grid(row=4, column=1, padx=5, pady=5)
     dest_ips_entry.insert(0, "B")
 
-    tk.Label(root, text="Services Column:").grid(row=5, column=0, sticky="e", padx=5, pady=5)
-    services_entry = tk.Entry(root)
+    tk.Label(self.master, text="Services Column:").grid(row=5, column=0, sticky="e", padx=5, pady=5)
+    services_entry = tk.Entry(self.master)
     services_entry.grid(row=5, column=1, padx=5, pady=5)
     services_entry.insert(0, "C")
 
-    tk.Label(root, text="Comments Column:").grid(row=6, column=0, sticky="e", padx=5, pady=5)
-    comments_entry = tk.Entry(root)
+    tk.Label(self.master, text="Comments Column:").grid(row=6, column=0, sticky="e", padx=5, pady=5)
+    comments_entry = tk.Entry(self.master)
     comments_entry.grid(row=6, column=1, padx=5, pady=5)
     comments_entry.insert(0, "D")
 
-    process_button = tk.Button(root, text="Process Excel", command=process_excel)
+    process_button = tk.Button(self.master, text="Process Excel", command=process_excel)
     process_button.grid(row=7, column=0, columnspan=2, pady=10)
 
-# Main script
-if __name__ == "__main__":
-    # Initialize the config manager
-    config_mgr = configmanager.ConfigManager(CONFIG_FILE)
-
-    # Create the main window
-    root = tk.Tk()
-    root.title("Excel Data Processor")
-
-    # Call the read_excel_form function
-    read_excel_form(root, config_mgr)
-
-    root.mainloop()
