@@ -175,7 +175,7 @@ def generate_output(cust_rules, config_mgr):
             flow_count = 1
             for path, (src, dst, *_) in paths.items():
                 rules_diagrams[path].append((src, dst, f"{comment}, install on {install_on}, flow {flow_count}"))
-                path_joined = str(flow_count) + ': ' + ' -> '.join(path)
+                path_joined = str(flow_count) + ': ' + ' --> '.join(path)
                 src_list.extend([(x, flow_count) for x in src])
                 dst_list.extend([(x, flow_count) for x in dst])
                 paths_list.append(path_joined)
