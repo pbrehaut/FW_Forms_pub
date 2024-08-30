@@ -118,8 +118,6 @@ class NetworkInfoGUI:
         process_button = tk.Button(excel_window, text="Process Excel", command=process_excel)
         process_button.pack(pady=10)
 
-
-
     def edit_config_file(self):
         # Read the current contents of the config file
         with open(CONFIG_FILE, 'r') as file:
