@@ -1,6 +1,6 @@
 from graphviz import Digraph
 from collections import defaultdict
-
+import group_diagram_comments
 
 def process_tuples(tuple_list):
     # Create a defaultdict to group tuples by their first two elements
@@ -14,8 +14,7 @@ def process_tuples(tuple_list):
     # Combine the grouped items
     result = []
     for key, comments in grouped.items():
-        combined_comment = ', '.join(comments)
-        result.append((list(key[0]), list(key[1]), combined_comment))
+        result.append((list(key[0]), list(key[1]), comments))
 
     return result
 
@@ -60,7 +59,7 @@ def create_graphviz_diagram(flow, ip_tuples, image_filename, src_filename):
         dot.edge(flow[i], flow[i + 1], color='#994C00')
 
     # Create nodes for each tuple
-    for idx, (src_ip, dst_ip, comment) in enumerate(ip_tuples):
+    for idx, (src_ip, dst_ip, comments) in enumerate(ip_tuples):
         # Get color pair for this iteration
         fillcolor, color = color_pairs[idx % len(color_pairs)]
 
@@ -73,11 +72,11 @@ def create_graphviz_diagram(flow, ip_tuples, image_filename, src_filename):
 
         # Create source IP node
         src_node = f"src_{idx}"
-        dot.node(src_node, f"{comment.replace(',', '\n')}\\n{src_label}", shape='ellipse', style='filled', fillcolor=fillcolor, color=color)
+        dot.node(src_node, f"{group_diagram_comments.group_data(comments)}\\n{src_label}", shape='ellipse', style='filled', fillcolor=fillcolor, color=color)
 
         # Create destination IP node
         dst_node = f"dst_{idx}"
-        dot.node(dst_node, f"{comment.replace(', ', '\n')}\\n{dst_label}", shape='ellipse', style='filled', fillcolor=fillcolor, color=color)
+        dot.node(dst_node, f"{group_diagram_comments.group_data(comments)}\\n{dst_label}", shape='ellipse', style='filled', fillcolor=fillcolor, color=color)
 
         # Connect source IP to first firewall
         dot.edge(src_node, flow[0], label='src', color=color)
