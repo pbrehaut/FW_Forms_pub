@@ -118,7 +118,7 @@ def generate_output(cust_rules, config_mgr):
     rules_diagrams = defaultdict(list)
 
     #   Find the IP addresses for the rules
-    for rule in rules:
+    for original_rule_id, rule in enumerate(rules, start=1):
         # Initialise a dictionary for the mapping of IP addresses to the original content of the rule for that IP
         ip_full_text_mapping = {}
         src, dst, port, comment = rule
@@ -167,14 +167,15 @@ def generate_output(cust_rules, config_mgr):
 
         new_rule = group_and_collapse(rule_src_dst_permutations)
 
-        for topology_name, paths in new_rule.items():
+        for topology_install_on, paths in new_rule.items():
             src_list = []
             dst_list = []
             paths_list = []
-            topology, install_on = topology_name
+            topology, install_on = topology_install_on
+            new_rule_id = f"{str(original_rule_id)}:{topology}:{install_on}"
             flow_count = 1
             for path, (src, dst, *_) in paths.items():
-                rules_diagrams[path].append((src, dst, f"{comment}, install on {install_on}, flow {flow_count}"))
+                rules_diagrams[path].append((src, dst, f"{new_rule_id}, flow {flow_count}"))
                 path_joined = str(flow_count) + ': ' + ' --> '.join(path)
                 src_list.extend([(x, flow_count) for x in src])
                 dst_list.extend([(x, flow_count) for x in dst])
@@ -201,7 +202,7 @@ def generate_output(cust_rules, config_mgr):
                 dst_str = format_ips_headings(dst_headings_ip)
 
             paths_str = '\n'.join(paths_list)
-            rows_to_output.append((src_str, dst_str, port, comment, topology, paths_str, install_on))
+            rows_to_output.append((src_str, dst_str, port, comment, new_rule_id, paths_str, install_on))
 
     diagram_files = []
     if detailed_diagrams:
@@ -233,7 +234,7 @@ def generate_output(cust_rules, config_mgr):
         'gateway': 6,
         'services': 2,
         'source_ips': 0,
-        'topology': 4,
+        'rule_id': 4,
         'paths': 5
     }
 

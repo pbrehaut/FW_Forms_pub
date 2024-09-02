@@ -621,7 +621,7 @@ class NetworkInfoGUI:
                 'services': 'C',
                 'comments': 'D',
                 'gateway': 'E',
-                'topology': 'F',
+                'rule_id': 'F',
                 'paths': 'G'
             }
 
