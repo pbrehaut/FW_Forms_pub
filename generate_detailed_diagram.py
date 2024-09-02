@@ -36,10 +36,10 @@ def create_graphviz_diagram(flow, ip_tuples, image_filename, src_filename):
         # ('#FFD700', '#B8860B'),  # Gold, Dark goldenrod
         # ('#98FB98', '#228B22'),  # Pale green, Forest green
         # ('#FFA07A', '#B22222'),  # Light salmon, Firebrick
-        ('#87CEFA', '#4682B4'),  # Light sky blue, Steel blue
         # ('#DDA0DD', '#8B008B'),  # Plum, Dark magenta
         # ('#F0E68C', '#BDB76B'),  # Khaki, Dark khaki
         ('#FFDAB9', '#CD853F'),  # Peach puff, Peru
+        ('#87CEFA', '#4682B4'),  # Light sky blue, Steel blue
         # ('#98FF98', '#2E8B57'),  # Mint cream, Sea green
         ('#AFEEEE', '#5F9EA0'),  # Pale turquoise, Cadet blue
         # ('#D8BFD8', '#9932CC'),  # Thistle, Dark orchid
