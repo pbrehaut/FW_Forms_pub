@@ -1,10 +1,10 @@
 from graphviz import Digraph
+import group_diagram_comments
 
 
 def create_graphviz_diagram(flow, src_ips, dst_ips, comments, image_filename, src_filename):
-    comments = [x.replace('\n', '; ') for x in comments]
     comments_str = '\n// '.join(comments)
-    label_str = '\\n'.join(comments)
+    label_str = group_diagram_comments.group_data(comments)
     dot = Digraph(comment=comments_str)
     dot.attr(label=label_str, labelloc='t', fontsize='12')
     dot.attr(rankdir='LR')  # Left to Right layout
