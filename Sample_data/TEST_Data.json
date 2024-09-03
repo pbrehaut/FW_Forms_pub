@@ -1,0 +1,28 @@
+{
+    "TEST": [
+        [
+            "Prod Servers FW1_FW2\n10.1.1.10 Server 1\n10.1.1.20 Server 2\n10.2.1.10 Server 3\n10.2.1.20 Server 4\n\n192.168.1.10 Server 1 OOB\n192.168.1.20 Server 2 OOB\n192.168.2.10 Server 3 OOB\n192.168.2.20 Server 4 OOB",
+            "10.200.1.20 AWS OOB Manager\n10.100.1.10 Azure Prod Manager",
+            "Syslog, NTP, DNS\nSNMP Trap",
+            "Management traffic ; to MGMT Server"
+        ],
+        [
+            "10.1.1.10 Server 1\n10.1.1.20 Server 2\n10.2.1.10 Server 3\n10.2.1.20 Server 4",
+            "DB Servers\n10.4.1.10\n10.4.1.20",
+            "Mysql",
+            "SQL Traffic"
+        ],
+        [
+            "10.1.1.0_24",
+            "10.2.1.0_24",
+            "IP Any",
+            "Prod Server connectivity"
+        ],
+        [
+            "Azure AWS Hosts\n10.200.1.20 AWS OOB Manager\n10.100.1.10 Azure Prod Manager",
+            "10.1.1.0/24 FW1\n10.2.1.0_24 FW2\n10.3.1.0_24 FW2\n10.4.1.0_24 FW4",
+            "SSH, RDP\nSNMP",
+            "Management traffic; to Prod servers"
+        ]
+    ]
+}
