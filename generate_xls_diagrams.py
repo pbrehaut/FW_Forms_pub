@@ -129,6 +129,7 @@ def generate_output(cust_rules, config_mgr):
 
         # swap back in newline to comments
         comment = comment.replace('; ', '\n')
+        #   Find the IP addresses for the source and destination
         src_ips, text_map1 = find_ip_addresses(src)
         dst_ips, text_map2 = find_ip_addresses(dst)
         ip_full_text_mapping.update(text_map1)
@@ -174,7 +175,7 @@ def generate_output(cust_rules, config_mgr):
         # its own path and the source and destination IPs for that path
         new_rule = group_and_collapse(rule_src_dst_permutations)
 
-        # For each grouping of install on an topology concatenates and format all rows under it
+        # For each grouping of install on and topology concatenate and format all rows under it
         # which are made up of the different paths/flows
         # add in a flow count ID to allow the user to print this out
         # if they want to know the individual flows within the rule
@@ -250,6 +251,7 @@ def generate_output(cust_rules, config_mgr):
             if diagram_file:
                 diagram_files.append(join(config_mgr.get_output_directory(cust), diagram_file))
 
+    # Map the field names to index values in each row
     field_mapping = {
         'comments': 3,
         'destination_ips': 1,
@@ -262,6 +264,8 @@ def generate_output(cust_rules, config_mgr):
 
     if rows_to_output:
         if group_gateways:
+            # Group together any rows that have the same source, destination, port and comments but
+            # different install on firewalls and concatenate the install on firewalls
             rows_to_output = group_and_concat_gateways(rows_to_output)
         xlsx_file = join(config_mgr.get_output_directory(cust), "excel_fw_forms", f"FW_Req_{cust}_{datetime_for_filename()}.xlsx")
         write_to_excel(rows_to_output, excel_headers, field_mapping,
@@ -269,6 +273,9 @@ def generate_output(cust_rules, config_mgr):
                        image_files=diagram_files,
                        template=config_mgr.get_template_file(cust))
 
+    # Create a string of missing IPs for each topology
+    # This will be output to the user if there are any missing IPs
+    # The user can then use this to update the topology file
     missing_ips_str = "\n\n".join([f"Topology: {topology}\n\nSource file: {config_mgr.get_topology(cust, topology).get('topology')}:\n\nMissing IPs (YAML)\n\n  - {'\n  - '.join([str(x) for x in sorted(ips)])}" for topology, ips in missing_ips_in_topologies.items()])
     return missing_ips_str
 
@@ -276,7 +283,6 @@ def generate_output(cust_rules, config_mgr):
 if __name__ == "__main__":
     config_mgr = ConfigManager('config.ini')
     TEST_DATA = r'C:\Users\pbrehaut4\PycharmProjects\FW_Forms_pub\Sample_data\TEST_Data.json'
-    #TEST_DATA = r'C:\Users\pbrehaut4\PycharmProjects\FW_Forms_pub\TEST\Output\json_rule_dumps\TEST_29_Aug_24_11-48-29.json'
     with open(TEST_DATA, 'r') as file:
         cust_rules = json.load(file)
         x_str = generate_output(cust_rules, config_mgr)
