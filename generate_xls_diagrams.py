@@ -163,10 +163,25 @@ def generate_output(cust_rules, config_mgr):
                 flow = min(flow, key=len)
                 rule_src_dst_permutations.append(((src_ip, dst_ip), topology_name, flow))
 
+        # Expand out from the path determined for this permutation all the gateways
+        # that require this rule to be installed on
+        # this will allow regrouping based on the install on gateway
         rule_src_dst_permutations = transform_network_data(rule_src_dst_permutations)
 
+        # Group the permutations/combinations on the topology and the install on firewall
+        # Subgroup by flow/path.
+        # Each item under the grouping of install on a topology will have
+        # its own path and the source and destination IPs for that path
         new_rule = group_and_collapse(rule_src_dst_permutations)
 
+        # For each grouping of install on an topology concatenates and format all rows under it
+        # which are made up of the different paths/flows
+        # add in a flow count ID to allow the user to print this out
+        # if they want to know the individual flows within the rule
+        # Add back in group headings and host descriptions
+        # Add in all the flows grouped on path to create the diagrams and to avoid duplicating the same diagram.
+        # The rule IDs and flows will be added to the endpoints for the grouped path/flow.
+        # This will allow the user to map back endpoints on the diagram to flows in the rule set
         for topology_install_on, paths in new_rule.items():
             src_list = []
             dst_list = []
@@ -206,6 +221,9 @@ def generate_output(cust_rules, config_mgr):
 
     diagram_files = []
     if detailed_diagrams:
+        # If detailed diagrams is specified each flow will have its own source and destination object on the diagram.
+        # This will result in separate rules that are grouped together on the same diagram having different
+        # source and destination objects
         for path, path_rules in rules_diagrams.items():
             diagram_image_file_name = join(config_mgr.get_output_directory(cust), "diagram_images", "_".join(path))
             diagram_src_file_name = join(config_mgr.get_output_directory(cust), "diagram_source_files", "_".join(path))
@@ -217,6 +235,10 @@ def generate_output(cust_rules, config_mgr):
             if diagram_file:
                 diagram_files.append(join(config_mgr.get_output_directory(cust), diagram_file))
     else:
+        # Combine all the flows together that match this path and represent them as one source and destination
+        # combination. The IP addresses for the flows will be represented by a start and end IP. The rule numbers and
+        # flow IDs will be printed at the top of the diagram in one text block to allow the user to map back the
+        # flows on this diagram to the rule set
         for path, path_rules in combine_tuple_fields(rules_diagrams):
             diagram_image_file_name = join(config_mgr.get_output_directory(cust), "diagram_images", "_".join(path))
             diagram_src_file_name = join(config_mgr.get_output_directory(cust), "diagram_source_files", "_".join(path))
@@ -253,7 +275,7 @@ def generate_output(cust_rules, config_mgr):
 
 if __name__ == "__main__":
     config_mgr = ConfigManager('config.ini')
-    TEST_DATA = r'C:\Users\pbrehaut4\PycharmProjects\FW_Forms_pub\Test_data\TEST_Data.json'
+    TEST_DATA = r'C:\Users\pbrehaut4\PycharmProjects\FW_Forms_pub\Sample_data\TEST_Data.json'
     #TEST_DATA = r'C:\Users\pbrehaut4\PycharmProjects\FW_Forms_pub\TEST\Output\json_rule_dumps\TEST_29_Aug_24_11-48-29.json'
     with open(TEST_DATA, 'r') as file:
         cust_rules = json.load(file)
