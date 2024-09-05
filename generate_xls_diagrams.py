@@ -166,7 +166,7 @@ def generate_output(cust_rules, config_mgr):
 
         # Expand out from the path determined for this permutation all the gateways
         # that require this rule to be installed on
-        # this will allow regrouping based on the install on gateway
+        # this will allow regrouping based on the installed on gateway
         rule_src_dst_permutations = transform_network_data(rule_src_dst_permutations)
 
         # Group the permutations/combinations on the topology and the install on firewall
