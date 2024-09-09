@@ -422,9 +422,7 @@ class NetworkInfoGUI:
             messagebox.showerror("Error",
                                  "Could not read the file. Please check if the file exists and you have permission to read it.")
 
-
     def load_excel_to_manual_form(self):
-
         # Extract the customer key from the JSON data
         customer_key = list(self.results.keys())[0]
         self.selected_customer.set(customer_key)
@@ -435,7 +433,6 @@ class NetworkInfoGUI:
 
         # Create and show manual input form
         self.create_manual_input_form()
-
 
     def process_results(self):
         config_mgr = ConfigManager(CONFIG_FILE)
