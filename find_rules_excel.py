@@ -37,7 +37,7 @@ def analyze_sheet(sheet) -> Dict[str, str]:
     field_columns = {
         'source_ips': Counter(rule['source_ips'] for rule in potential_rules).most_common(1)[0][0],
         'destination_ips': Counter(rule['destination_ips'] for rule in potential_rules).most_common(1)[0][0],
-        'ports_or_services': Counter(rule['ports_or_services'] for rule in potential_rules).most_common(1)[0][0],
+        'services': Counter(rule['services'] for rule in potential_rules).most_common(1)[0][0],
         'comments': Counter(rule['comments'] for rule in potential_rules).most_common(1)[0][0]
     }
 
@@ -73,7 +73,7 @@ def analyze_row(sheet, row: int, max_column: int, ip_pattern, services: List[str
             'row': row,
             'source_ips': source_ips,
             'destination_ips': destination_ips,
-            'ports_or_services': ports_or_services,
+            'services': ports_or_services,
             'comments': comments
         }
     return None
