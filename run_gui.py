@@ -6,6 +6,7 @@ import generate_xls_diagrams
 from configmanager import ConfigManager
 import configparser
 import openpyxl
+import find_rules_excel
 
 # Global variable for config file
 CONFIG_FILE = 'config.ini'
@@ -53,6 +54,47 @@ class NetworkInfoGUI:
             data[customer].append(row_data)
 
         return data
+
+    def read_excel_auto_form(self):
+        excel_window = tk.Toplevel(self.master)
+        excel_window.title("Read Excel Data - Auto-detect")
+        excel_window.geometry("300x200")
+
+        tk.Label(excel_window, text="Customer:").pack(pady=5)
+        customer_var = tk.StringVar()
+        customer_dropdown = ttk.Combobox(excel_window, textvariable=customer_var, values=self.customers, state="readonly")
+        customer_dropdown.pack(pady=5)
+        if self.customers:
+            customer_dropdown.set(self.customers[0])
+
+        def process_excel_auto():
+            config_mgr = ConfigManager(CONFIG_FILE)
+            file_path = filedialog.askopenfilename(filetypes=[("Excel files", "*.xlsx")])
+            if not file_path:
+                return
+
+            sheets_rule_spec = find_rules_excel.analyze_excel_workbook(file_path)
+            if not sheets_rule_spec:
+                messagebox.showerror("Error", "No valid sheets found.")
+                return
+            for sheet_name, rule_spec in sheets_rule_spec.items():
+                customer = rule_spec['customer']
+                start_row = rule_spec['start_row']
+                source_ips = rule_spec['source_ips']
+                dest_ips = rule_spec['dest_ips']
+                services = rule_spec['services']
+                comments = rule_spec['comments']
+
+
+                try:
+                    self.results = self.read_excel_data(file_path, customer, sheet_name, start_row, source_ips, dest_ips, services, comments)
+                    generate_xls_diagrams.generate_output(self.results, config_mgr, sheet_name.replace(" ", "_"))
+                    messagebox.showinfo("Success", f"Data processed successfully for {sheet_name}!")
+                except Exception as e:
+                    messagebox.showerror("Error", f"An error occurred: {str(e)}")
+
+        process_button = tk.Button(excel_window, text="Process Excel", command=process_excel_auto)
+        process_button.pack(pady=10)
 
     def read_excel_form(self):
         excel_window = tk.Toplevel(self.master)
@@ -183,7 +225,6 @@ class NetworkInfoGUI:
         render_diagrams_in_directory(self.stored_diagram_dir_path.get())
         messagebox.showinfo("Rendering Complete", "Diagrams have been rendered successfully.")
 
-
     def create_initial_form(self):
         self.master.geometry("400x600")
         # File Selection Section
@@ -308,23 +349,17 @@ class NetworkInfoGUI:
                                                                     CONFIG_FILE))
         options_button.pack(side=tk.LEFT, padx=5)
 
-
         # Add an "template select" button
         template_button = ttk.Button(button_frame, text="Template",
                                     command=lambda: self.edit_excel_form(self.selected_customer.get() + ".FILES",
                                                                     CONFIG_FILE))
         template_button.pack(side=tk.LEFT, padx=5)
 
-
-
-
-
         # Submit Button (now in button_frame)
         self.submit_button = ttk.Button(button_frame, text="Submit", command=self.submit_results)
         self.submit_button.pack(side=tk.RIGHT, padx=5)
 
         # Assuming this is part of a class, and self.manual_input_frame already exists
-
         # Create a frame to hold the Treeview and scrollbar
         tree_frame = tk.Frame(self.manual_input_frame)
         tree_frame.pack(padx=10, pady=10, fill="both", expand=True)
@@ -368,8 +403,6 @@ class NetworkInfoGUI:
         # Set focus to the first field
         if first_field:
             self.master.after(100, lambda: first_field.focus_set())
-
-        #self.master.bind("<Return>", lambda event: self.submit_results())
 
     def bind_tab_navigation(self):
         def focus_next_widget(event):
