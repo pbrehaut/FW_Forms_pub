@@ -44,7 +44,7 @@ def src_dst_permutations(src_ips, dst_ips):
             yield src_ip, dst_ip
 
 
-def generate_output(cust_rules, config_mgr):
+def generate_output(cust_rules, config_mgr, file_prefix=None):
     #  Get the 1st key of the cust_rules dictionary and
     #  generate an exception if there is more than one, we only want one customer
     if len(cust_rules) > 1:
@@ -267,7 +267,11 @@ def generate_output(cust_rules, config_mgr):
             # Group together any rows that have the same source, destination, port and comments but
             # different install on firewalls and concatenate the install on firewalls
             rows_to_output = group_and_concat_gateways(rows_to_output)
-        xlsx_file = join(config_mgr.get_output_directory(cust), "excel_fw_forms", f"FW_Req_{cust}_{datetime_for_filename()}.xlsx")
+        if file_prefix:
+            file_prefix = f"_{file_prefix}"
+        else:
+            file_prefix = ""
+        xlsx_file = join(config_mgr.get_output_directory(cust), "excel_fw_forms", f"FW_Req_{cust}{file_prefix}_{datetime_for_filename()}.xlsx")
         write_to_excel(rows_to_output, excel_headers, field_mapping,
                        filename=xlsx_file,
                        image_files=diagram_files,
