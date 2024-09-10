@@ -230,89 +230,71 @@ class NetworkInfoGUI:
         messagebox.showinfo("Rendering Complete", "Diagrams have been rendered successfully.")
 
     def create_initial_form(self):
-        self.master.geometry("400x600")
-        # File Selection Section
-        self.file_label = tk.Label(self.master, text="Load from File", font=("Arial", 12, "bold"))
-        self.file_label.pack(pady=(20, 10))
+        self.master.geometry("600x400")
+        self.master.grid_columnconfigure(0, weight=1)
+        self.master.grid_columnconfigure(1, weight=1)
 
-        file_frame = tk.Frame(self.master)
-        file_frame.pack(pady=5)
+        # File Selection Section
+        file_frame = tk.LabelFrame(self.master, text="Load from File", font=("Arial", 12, "bold"))
+        file_frame.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
 
         self.file_entry = tk.Entry(file_frame, textvariable=self.stored_file_path, width=30)
-        self.file_entry.pack(side=tk.LEFT)
+        self.file_entry.grid(row=0, column=0, padx=5, pady=5)
 
         self.browse_button = tk.Button(file_frame, text="Browse", command=self.browse_file)
-        self.browse_button.pack(side=tk.LEFT)
+        self.browse_button.grid(row=0, column=1, padx=5, pady=5)
 
-        self.load_button = tk.Button(self.master, text="Load JSON File", command=self.load_file)
-        self.load_button.pack(pady=5)
+        self.load_button = tk.Button(file_frame, text="Load JSON File", command=self.load_file)
+        self.load_button.grid(row=1, column=0, columnspan=2, pady=5)
 
-        # Separator
-        self.separator4 = ttk.Separator(self.master, orient='horizontal')
-        self.separator4.pack(fill='x', pady=20)
+        # Excel Load Section
+        excel_frame = tk.LabelFrame(self.master, text="Load from Excel", font=("Arial", 12, "bold"))
+        excel_frame.grid(row=0, column=1, padx=10, pady=10, sticky="nsew")
 
-        self.excel_label = tk.Label(self.master, text="Load from Excel", font=("Arial", 12, "bold"))
-        self.excel_label.pack(pady=(20, 10))
+        self.load_excel_button = tk.Button(excel_frame, text="Load From Excel", command=self.read_excel_form)
+        self.load_excel_button.grid(row=0, column=0, pady=5)
 
-        # New Excel Load Button
-        self.load_excel_button = tk.Button(self.master, text="Load From Excel", command=self.read_excel_form)
-        self.load_excel_button.pack(pady=5)
-
-        # New Auto Excel Load Button
-        self.load_auto_excel_button = tk.Button(self.master, text="Auto Load From Excel",
+        self.load_auto_excel_button = tk.Button(excel_frame, text="Auto Load From Excel",
                                                 command=self.read_excel_auto_form)
-        self.load_auto_excel_button.pack(pady=5)
-
-        # Separator
-        self.separator = ttk.Separator(self.master, orient='horizontal')
-        self.separator.pack(fill='x', pady=20)
+        self.load_auto_excel_button.grid(row=1, column=0, pady=5)
 
         # Customer Selection Section
-        self.customer_label = tk.Label(self.master, text="Manual Input", font=("Arial", 12, "bold"))
-        self.customer_label.pack(pady=(10, 10))
+        customer_frame = tk.LabelFrame(self.master, text="Manual Input", font=("Arial", 12, "bold"))
+        customer_frame.grid(row=1, column=0, padx=10, pady=10, sticky="nsew")
 
-        self.select_customer_label = tk.Label(self.master, text="Select Customer:")
-        self.select_customer_label.pack()
+        self.select_customer_label = tk.Label(customer_frame, text="Select Customer:")
+        self.select_customer_label.grid(row=0, column=0, pady=5)
 
-        self.customer_combo = ttk.Combobox(self.master, textvariable=self.selected_customer,
+        self.customer_combo = ttk.Combobox(customer_frame, textvariable=self.selected_customer,
                                            values=list(self.customers))
-        self.customer_combo.pack(pady=5)
+        self.customer_combo.grid(row=1, column=0, pady=5)
 
-        self.start_manual_button = tk.Button(self.master, text="Start Manual Input", command=self.start_manual_input)
-        self.start_manual_button.pack(pady=5)
-
-        # Separator
-        self.separator2 = ttk.Separator(self.master, orient='horizontal')
-        self.separator2.pack(fill='x', pady=20)
+        self.start_manual_button = tk.Button(customer_frame, text="Start Manual Input", command=self.start_manual_input)
+        self.start_manual_button.grid(row=2, column=0, pady=5)
 
         # Diagram Rendering Section
-        self.diagram_label = tk.Label(self.master, text="Render Diagrams", font=("Arial", 12, "bold"))
-        self.diagram_label.pack(pady=(10, 10))
-
-        diagram_frame = tk.Frame(self.master)
-        diagram_frame.pack(pady=5)
+        diagram_frame = tk.LabelFrame(self.master, text="Render Diagrams", font=("Arial", 12, "bold"))
+        diagram_frame.grid(row=1, column=1, padx=10, pady=10, sticky="nsew")
 
         self.diagram_dir_entry = tk.Entry(diagram_frame, textvariable=self.stored_diagram_dir_path, width=30)
-        self.diagram_dir_entry.pack(side=tk.LEFT)
+        self.diagram_dir_entry.grid(row=0, column=0, padx=5, pady=5)
 
         self.browse_dir_button = tk.Button(diagram_frame, text="Browse", command=self.browse_directory)
-        self.browse_dir_button.pack(side=tk.LEFT)
+        self.browse_dir_button.grid(row=0, column=1, padx=5, pady=5)
 
-        self.render_button = tk.Button(self.master, text="Render Diagrams", command=self.render_diagrams)
-        self.render_button.pack(pady=5)
+        self.render_button = tk.Button(diagram_frame, text="Render Diagrams", command=self.render_diagrams)
+        self.render_button.grid(row=1, column=0, columnspan=2, pady=5)
 
-        # Separator
-        self.separator3 = ttk.Separator(self.master, orient='horizontal')
-        self.separator3.pack(fill='x', pady=20)
-
+        # Additional Buttons
         button_frame = tk.Frame(self.master)
-        button_frame.pack(pady=5)
+        button_frame.grid(row=2, column=0, columnspan=2, pady=10)
 
         self.modify_config_button = tk.Button(button_frame, text="Add/Modify\nCustomers/Topologies",
                                               command=self.modify_config)
         self.modify_config_button.pack(side=tk.LEFT, padx=5)
 
-        self.edit_config_button = tk.Button(button_frame, text=f"Edit Config File:\n{CONFIG_FILE}", command=self.edit_config_file)
+        self.edit_config_button = tk.Button(button_frame, text=f"Edit Config File:\n{CONFIG_FILE}",
+                                            command=self.edit_config_file)
         self.edit_config_button.pack(side=tk.LEFT, padx=5)
 
     def create_manual_input_form(self):
