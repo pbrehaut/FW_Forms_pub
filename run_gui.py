@@ -247,6 +247,13 @@ class NetworkInfoGUI:
         self.load_button = tk.Button(self.master, text="Load JSON File", command=self.load_file)
         self.load_button.pack(pady=5)
 
+        # Separator
+        self.separator4 = ttk.Separator(self.master, orient='horizontal')
+        self.separator4.pack(fill='x', pady=20)
+
+        self.excel_label = tk.Label(self.master, text="Load from Excel", font=("Arial", 12, "bold"))
+        self.excel_label.pack(pady=(20, 10))
+
         # New Excel Load Button
         self.load_excel_button = tk.Button(self.master, text="Load From Excel", command=self.read_excel_form)
         self.load_excel_button.pack(pady=5)
