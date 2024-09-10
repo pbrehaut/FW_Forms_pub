@@ -78,13 +78,12 @@ class NetworkInfoGUI:
                 messagebox.showerror("Error", "No valid sheets found.")
                 return
             for sheet_name, rule_spec in sheets_rule_spec.items():
-                customer = rule_spec['customer']
+                customer = customer_var.get()
                 start_row = rule_spec['start_row']
                 source_ips = rule_spec['source_ips']
                 dest_ips = rule_spec['dest_ips']
                 services = rule_spec['services']
                 comments = rule_spec['comments']
-
 
                 try:
                     self.results = self.read_excel_data(file_path, customer, sheet_name, start_row, source_ips, dest_ips, services, comments)
