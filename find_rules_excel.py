@@ -36,7 +36,7 @@ def analyze_sheet(sheet) -> Dict[str, str]:
     # Find the most common column for each field
     field_columns = {
         'source_ips': Counter(rule['source_ips'] for rule in potential_rules).most_common(1)[0][0],
-        'destination_ips': Counter(rule['destination_ips'] for rule in potential_rules).most_common(1)[0][0],
+        'dest_ips': Counter(rule['dest_ips'] for rule in potential_rules).most_common(1)[0][0],
         'services': Counter(rule['services'] for rule in potential_rules).most_common(1)[0][0],
         'comments': Counter(rule['comments'] for rule in potential_rules).most_common(1)[0][0]
     }
@@ -49,7 +49,7 @@ def analyze_sheet(sheet) -> Dict[str, str]:
 
 def analyze_row(sheet, row: int, max_column: int, ip_pattern, services: List[str], protocols: List[str]) -> Dict[str, str]:
     source_ips = None
-    destination_ips = None
+    dest_ips = None
     ports_or_services = None
     comments = None
 
@@ -60,19 +60,19 @@ def analyze_row(sheet, row: int, max_column: int, ip_pattern, services: List[str
 
         if not source_ips and ip_pattern.search(cell_value):
             source_ips = openpyxl.utils.get_column_letter(col)
-        elif not destination_ips and ip_pattern.search(cell_value):
-            destination_ips = openpyxl.utils.get_column_letter(col)
+        elif not dest_ips and ip_pattern.search(cell_value):
+            dest_ips = openpyxl.utils.get_column_letter(col)
         elif not ports_or_services and (any(service.lower() in cell_value.lower() for service in services) or
                                         any(protocol.lower() in cell_value.lower() for protocol in protocols)):
             ports_or_services = openpyxl.utils.get_column_letter(col)
         elif not comments and len(cell_value.split()) > 0:
             comments = openpyxl.utils.get_column_letter(col)
 
-    if all([source_ips, destination_ips, ports_or_services, comments]):
+    if all([source_ips, dest_ips, ports_or_services, comments]):
         return {
             'row': row,
             'source_ips': source_ips,
-            'destination_ips': destination_ips,
+            'dest_ips': dest_ips,
             'services': ports_or_services,
             'comments': comments
         }

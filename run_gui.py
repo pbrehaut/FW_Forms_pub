@@ -62,7 +62,8 @@ class NetworkInfoGUI:
 
         tk.Label(excel_window, text="Customer:").pack(pady=5)
         customer_var = tk.StringVar()
-        customer_dropdown = ttk.Combobox(excel_window, textvariable=customer_var, values=self.customers, state="readonly")
+        customer_dropdown = ttk.Combobox(excel_window, textvariable=customer_var, values=self.customers,
+                                         state="readonly")
         customer_dropdown.pack(pady=5)
         if self.customers:
             customer_dropdown.set(self.customers[0])
@@ -86,11 +87,15 @@ class NetworkInfoGUI:
                 comments = rule_spec['comments']
 
                 try:
-                    self.results = self.read_excel_data(file_path, customer, sheet_name, start_row, source_ips, dest_ips, services, comments)
+                    self.results = self.read_excel_data(file_path, customer, sheet_name, start_row, source_ips,
+                                                        dest_ips, services, comments)
                     generate_xls_diagrams.generate_output(self.results, config_mgr, sheet_name.replace(" ", "_"))
                     messagebox.showinfo("Success", f"Data processed successfully for {sheet_name}!")
                 except Exception as e:
                     messagebox.showerror("Error", f"An error occurred: {str(e)}")
+
+            excel_window.destroy()
+            self.create_initial_form()
 
         process_button = tk.Button(excel_window, text="Process Excel", command=process_excel_auto)
         process_button.pack(pady=10)
@@ -245,6 +250,11 @@ class NetworkInfoGUI:
         # New Excel Load Button
         self.load_excel_button = tk.Button(self.master, text="Load From Excel", command=self.read_excel_form)
         self.load_excel_button.pack(pady=5)
+
+        # New Auto Excel Load Button
+        self.load_auto_excel_button = tk.Button(self.master, text="Auto Load From Excel",
+                                                command=self.read_excel_auto_form)
+        self.load_auto_excel_button.pack(pady=5)
 
         # Separator
         self.separator = ttk.Separator(self.master, orient='horizontal')
