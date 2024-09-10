@@ -87,7 +87,7 @@ class NetworkInfoGUI:
                 comments = rule_spec['comments']
 
                 try:
-                    self.results = self.read_excel_data(file_path, customer, sheet_name, start_row, source_ips,
+                    self.results = self.read_excel_data(file_path, customer, sheet_name, int(start_row), source_ips,
                                                         dest_ips, services, comments)
                     generate_xls_diagrams.generate_output(self.results, config_mgr, sheet_name.replace(" ", "_"))
                     messagebox.showinfo("Success", f"Data processed successfully for {sheet_name}!")
