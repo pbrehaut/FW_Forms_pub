@@ -13,6 +13,7 @@ import generate_detailed_diagram
 from combine_diagrams import combine_tuple_fields
 import os
 import ip_headings
+import convert_flow_charts
 
 
 def create_subdirectories(base_dir):
@@ -276,6 +277,15 @@ def generate_output(cust_rules, config_mgr, file_prefix=None):
                        filename=xlsx_file,
                        image_files=diagram_files,
                        template=config_mgr.get_template_file(cust))
+
+    for topology, v in topologies.items():
+        diagram, _ = v
+        diag_file_1 = join(config_mgr.get_output_directory(cust), "diagram_source_files", f"{cust}_{topology}_1.txt")
+        with open(diag_file_1, 'w') as f:
+            f.write(convert_flow_charts.convert_mermaid_to_dot(diagram.diagram_text))
+        diag_file_2 = join(config_mgr.get_output_directory(cust), "diagram_source_files", f"{cust}_{topology}_2.txt")
+        with open(diag_file_2, 'w') as f:
+            f.write(convert_flow_charts.convert_mermaid_to_dot(diagram.diagram_text, format_endnodes=True))
 
     # Create a string of missing IPs for each topology
     # This will be output to the user if there are any missing IPs
