@@ -254,6 +254,25 @@ def generate_output(cust_rules, config_mgr, file_prefix=None):
             if diagram_file:
                 diagram_files.append(join(config_mgr.get_output_directory(cust), diagram_file))
 
+    for topology, v in topologies.items():
+        diagram, _ = v
+        diag_file_1_src = join(config_mgr.get_output_directory(cust), "diagram_source_files", f"{cust}_{topology}_1.txt")
+        diag_file_1_image = join(config_mgr.get_output_directory(cust), "diagram_images", f"{cust}_{topology}_1.png")
+        with open(diag_file_1_src, 'w') as f:
+            f.write(convert_flow_charts.convert_mermaid_to_dot(diagram.diagram_text))
+        diagram_renderer.render_diagram(diag_file_1_src, diag_file_1_image)
+
+        diag_file_2_src = join(config_mgr.get_output_directory(cust), "diagram_source_files", f"{cust}_{topology}_2.txt")
+        diag_file_2_image = join(config_mgr.get_output_directory(cust), "diagram_images", f"{cust}_{topology}_2.png")
+        with open(diag_file_2_src, 'w') as f:
+            f.write(convert_flow_charts.convert_mermaid_to_dot(diagram.diagram_text, True))
+        diagram_renderer.render_diagram(diag_file_2_src, diag_file_2_image)
+
+        diagram_files.insert(0, diag_file_1_image)
+
+        diagram_files.insert(0, diag_file_2_image)
+
+
     # Map the field names to index values in each row
     field_mapping = {
         'comments': 3,
@@ -279,21 +298,6 @@ def generate_output(cust_rules, config_mgr, file_prefix=None):
                        filename=xlsx_file,
                        image_files=diagram_files,
                        template=config_mgr.get_template_file(cust))
-
-    for topology, v in topologies.items():
-        diagram, _ = v
-        diag_file_1_src = join(config_mgr.get_output_directory(cust), "diagram_source_files", f"{cust}_{topology}_1.txt")
-        diag_file_1_image = join(config_mgr.get_output_directory(cust), "diagram_images", f"{cust}_{topology}_1.png")
-        with open(diag_file_1_src, 'w') as f:
-            f.write(convert_flow_charts.convert_mermaid_to_dot(diagram.diagram_text))
-        diagram_renderer.render_diagram(diag_file_1_src, diag_file_1_image)
-
-        diag_file_2_src = join(config_mgr.get_output_directory(cust), "diagram_source_files", f"{cust}_{topology}_2.txt")
-        diag_file_2_image = join(config_mgr.get_output_directory(cust), "diagram_images", f"{cust}_{topology}_2.png")
-        with open(diag_file_2_src, 'w') as f:
-            f.write(convert_flow_charts.convert_mermaid_to_dot(diagram.diagram_text, True))
-        diagram_renderer.render_diagram(diag_file_2_src, diag_file_2_image)
-
 
     # Create a string of missing IPs for each topology
     # This will be output to the user if there are any missing IPs
