@@ -1,6 +1,8 @@
 from datetime import datetime
 import json
 from os.path import join
+
+import diagram_renderer
 from firewalldiagram import FirewallDiagram
 from subnetfirewallmapper import SubnetFirewallMapper
 from findips import find_ip_addresses
@@ -280,12 +282,18 @@ def generate_output(cust_rules, config_mgr, file_prefix=None):
 
     for topology, v in topologies.items():
         diagram, _ = v
-        diag_file_1 = join(config_mgr.get_output_directory(cust), "diagram_source_files", f"{cust}_{topology}_1.txt")
-        with open(diag_file_1, 'w') as f:
+        diag_file_1_src = join(config_mgr.get_output_directory(cust), "diagram_source_files", f"{cust}_{topology}_1.txt")
+        diag_file_1_image = join(config_mgr.get_output_directory(cust), "diagram_images", f"{cust}_{topology}_1.png")
+        with open(diag_file_1_src, 'w') as f:
             f.write(convert_flow_charts.convert_mermaid_to_dot(diagram.diagram_text))
-        diag_file_2 = join(config_mgr.get_output_directory(cust), "diagram_source_files", f"{cust}_{topology}_2.txt")
-        with open(diag_file_2, 'w') as f:
-            f.write(convert_flow_charts.convert_mermaid_to_dot(diagram.diagram_text, format_endnodes=True))
+        diagram_renderer.render_diagram(diag_file_1_src, diag_file_1_image)
+
+        diag_file_2_src = join(config_mgr.get_output_directory(cust), "diagram_source_files", f"{cust}_{topology}_2.txt")
+        diag_file_2_image = join(config_mgr.get_output_directory(cust), "diagram_images", f"{cust}_{topology}_2.png")
+        with open(diag_file_2_src, 'w') as f:
+            f.write(convert_flow_charts.convert_mermaid_to_dot(diagram.diagram_text, True))
+        diagram_renderer.render_diagram(diag_file_2_src, diag_file_2_image)
+
 
     # Create a string of missing IPs for each topology
     # This will be output to the user if there are any missing IPs

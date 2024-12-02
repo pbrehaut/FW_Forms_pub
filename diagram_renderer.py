@@ -21,3 +21,15 @@ def render_diagrams_in_directory(directory):
                 print(f"Rendered: {output_filename}")
             except Exception as e:
                 print(f"Error rendering {filename}: {str(e)}")
+
+
+def render_diagram(diagram_src, output_image):
+    try:
+        with open(diagram_src, 'r') as f:
+            dot_source = f.read()
+
+        graph = graphviz.Source(dot_source)
+        graph.render(output_image, format='png', cleanup=True)
+        print(f"Rendered: {output_image}")
+    except Exception as e:
+        print(f"Error rendering {diagram_src}: {str(e)}")
