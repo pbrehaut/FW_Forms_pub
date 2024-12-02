@@ -259,13 +259,13 @@ def generate_output(cust_rules, config_mgr, file_prefix=None):
         diag_file_1_src = join(config_mgr.get_output_directory(cust), "diagram_source_files", f"{cust}_{topology}_1.txt")
         diag_file_1_image = join(config_mgr.get_output_directory(cust), "diagram_images", f"{cust}_{topology}_1.png")
         with open(diag_file_1_src, 'w') as f:
-            f.write(convert_flow_charts.convert_mermaid_to_dot(diagram.diagram_text))
+            f.write(convert_flow_charts.convert_mermaid_to_dot(diagram.diagram_text, title=f"{cust} {topology} Topology"))
         diagram_renderer.render_diagram(diag_file_1_src, diag_file_1_image)
 
         diag_file_2_src = join(config_mgr.get_output_directory(cust), "diagram_source_files", f"{cust}_{topology}_2.txt")
         diag_file_2_image = join(config_mgr.get_output_directory(cust), "diagram_images", f"{cust}_{topology}_2.png")
         with open(diag_file_2_src, 'w') as f:
-            f.write(convert_flow_charts.convert_mermaid_to_dot(diagram.diagram_text, True))
+            f.write(convert_flow_charts.convert_mermaid_to_dot(diagram.diagram_text, format_endnodes=True, title=f"{cust} {topology} Topology"))
         diagram_renderer.render_diagram(diag_file_2_src, diag_file_2_image)
 
         diagram_files.insert(0, diag_file_1_image)

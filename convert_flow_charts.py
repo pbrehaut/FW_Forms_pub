@@ -1,10 +1,11 @@
-def convert_mermaid_to_dot(mermaid_input, format_endnodes=False):
+def convert_mermaid_to_dot(mermaid_input, format_endnodes=False, title=None):
     """
     Convert Mermaid flowchart syntax to DOT format for Graphviz
 
     Args:
         mermaid_input (str): Input string in Mermaid flowchart format
         format_endnodes (bool): If True, format end nodes differently
+        title (str, optional): Title to be displayed on the graph. Defaults to None.
 
     Returns:
         str: Converted flowchart in DOT format
@@ -37,6 +38,12 @@ def convert_mermaid_to_dot(mermaid_input, format_endnodes=False):
 
     # Build DOT format output
     dot_output = ['digraph network_diagram {', '    rankdir=LR;  // Left to right layout']
+
+    # Add title if provided
+    if title:
+        dot_output.append(f'    label="{title}";')
+        dot_output.append('    labelloc="t";  // Place title at top')
+        dot_output.append('    fontsize=16;')
 
     # Add node definitions
     dot_output.append('    // Define nodes with appropriate formatting')
