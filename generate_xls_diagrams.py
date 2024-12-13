@@ -123,7 +123,8 @@ def generate_output(cust_rules, config_mgr, file_prefix=None):
     #   Find the IP addresses for the rules
     for original_rule_id, rule in enumerate(rules, start=1):
         # Initialise a dictionary for the mapping of IP addresses to the original content of the rule for that IP
-        ip_full_text_mapping = {}
+        src_ip_full_text_mapping = {}
+        dst_ip_full_text_mapping = {}
         src, dst, port, comment = rule
 
         # Add headings back in later
@@ -133,10 +134,10 @@ def generate_output(cust_rules, config_mgr, file_prefix=None):
         # swap back in newline to comments
         comment = comment.replace('; ', '\n')
         #   Find the IP addresses for the source and destination
-        src_ips, text_map1 = find_ip_addresses(src)
-        dst_ips, text_map2 = find_ip_addresses(dst)
-        ip_full_text_mapping.update(text_map1)
-        ip_full_text_mapping.update(text_map2)
+        src_ips, src_text_map = find_ip_addresses(src)
+        dst_ips, dst_text_map = find_ip_addresses(dst)
+        src_ip_full_text_mapping.update(src_text_map)
+        dst_ip_full_text_mapping.update(dst_text_map)
 
         #   Get the permutations of the source and destination IP's
         rule_src_dst_permutations = []
@@ -201,8 +202,8 @@ def generate_output(cust_rules, config_mgr, file_prefix=None):
                 paths_list.append(path_joined)
                 flow_count += 1
             # Swap back in the original text entered by the user
-            src_list = [(ip_full_text_mapping.get(ip, ip), fc) for ip, fc in src_list]
-            dst_list = [(ip_full_text_mapping.get(ip, ip), fc) for ip, fc in dst_list]
+            src_list = [(src_ip_full_text_mapping.get(ip, ip), fc) for ip, fc in src_list]
+            dst_list = [(dst_ip_full_text_mapping.get(ip, ip), fc) for ip, fc in dst_list]
 
             src_headings_ip = defaultdict(list)
             dst_headings_ip = defaultdict(list)

@@ -48,18 +48,39 @@ def convert_mermaid_to_dot(mermaid_input, format_endnodes=False, title=None):
     # Add node definitions
     dot_output.append('    // Define nodes with appropriate formatting')
     for node in sorted(node_connections.keys()):
+        node_formatted = node.replace('-', '_')  # Replace hyphens with underscores
         if format_endnodes and node in end_nodes:
             # End node format
-            dot_output.append(f'    {node} [label="{node}", shape=ellipse, style=filled, fillcolor=lightblue];')
+            dot_output.append(
+                f'    {node_formatted} [label="{node}", shape=ellipse, style=filled, fillcolor=lightblue];')
         else:
             # Default format
-            dot_output.append(f'    {node} [label="{node}", shape=rectangle, style=filled, fillcolor=orange];')
+            dot_output.append(
+                f'    {node_formatted} [label="{node}", shape=rectangle, style=filled, fillcolor=orange];')
 
     # Add connections
     dot_output.append('    // Define bidirectional connections')
     for node1, node2 in connections:
-        dot_output.append(f'    {node1} -> {node2} [dir=both];')
+        node1_formatted = node1.replace('-', '_')
+        node2_formatted = node2.replace('-', '_')
+        dot_output.append(f'    {node1_formatted} -> {node2_formatted} [dir=both];')
 
     dot_output.append('}')
 
     return '\n'.join(dot_output)
+
+
+if __name__ == "__main__":
+    # Example Mermaid input
+    mermaid_input = """
+    """
+
+
+    diag_file_2_src = 'test-diag.txt'
+    diag_file_2_image = 'test-diag.png'
+    with open(diag_file_2_src, 'w') as f:
+        f.write(convert_mermaid_to_dot(mermaid_input))
+
+    import diagram_renderer
+    diagram_renderer.render_diagram(diag_file_2_src, diag_file_2_image)
+
