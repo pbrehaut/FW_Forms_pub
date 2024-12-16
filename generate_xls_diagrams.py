@@ -309,7 +309,7 @@ def generate_output(cust_rules, config_mgr, file_prefix=None):
 
 if __name__ == "__main__":
     config_mgr = ConfigManager('config.ini')
-    TEST_DATA = r'C:\Users\pbrehaut4\PycharmProjects\FW_Forms_pub\Sample_data\TEST_Data.json'
+    TEST_DATA = r''
     with open(TEST_DATA, 'r') as file:
         cust_rules = json.load(file)
         x_str = generate_output(cust_rules, config_mgr)

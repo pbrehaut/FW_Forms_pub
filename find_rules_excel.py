@@ -1,19 +1,73 @@
 import openpyxl
 import re
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Optional
 from collections import Counter
+
+
+def find_header_row(sheet, header_variations: Dict[str, List[str]]) -> Tuple[Optional[Dict[str, str]], int]:
+    """
+    Searches for header row matching specified variations.
+    Returns tuple of (column_mapping, header_row) or (None, -1) if not found.
+    """
+    max_row = min(sheet.max_row, 20)  # Only check first 20 rows for headers
+    max_column = sheet.max_column
+
+    # Create sets of variations for each field for faster lookup
+    variation_sets = {
+        field: set(variations + [var.lower() for var in variations])
+        for field, variations in header_variations.items()
+    }
+
+    for row in range(1, max_row + 1):
+        found_columns = {}
+
+        for col in range(1, max_column + 1):
+            cell_value = str(sheet.cell(row, col).value).strip().lower()
+            if not cell_value or cell_value == 'none':
+                continue
+
+            for field, variations in variation_sets.items():
+                if cell_value in variations:
+                    found_columns[field] = openpyxl.utils.get_column_letter(col)
+                    break
+
+        # If we found all required headers
+        if len(found_columns) == len(header_variations):
+            return found_columns, row
+
+    return None, -1
+
 
 def analyze_excel_workbook(file_path: str) -> Dict[str, Dict[str, str]]:
     workbook = openpyxl.load_workbook(file_path, data_only=True)
     result = {}
 
+    # Define header variations to look for
+    header_variations = {
+        'source_ips': ['source', 'sources', 'src', 'source ip', 'source ips'],
+        'dest_ips': ['destination', 'destinations', 'dst', 'dest', 'destination ip', 'destination ips'],
+        'services': ['port', 'ports', 'service', 'services', 'protocol', 'protocols'],
+        'comments': ['comment', 'comments', 'description', 'descriptions', 'notes']
+    }
+
     for sheet_name in workbook.sheetnames:
         sheet = workbook[sheet_name]
-        sheet_data = analyze_sheet(sheet)
-        if sheet_data:
-            result[sheet_name] = sheet_data
+
+        # First try to find headers
+        column_mapping, header_row = find_header_row(sheet, header_variations)
+
+        if column_mapping:
+            # If headers found, add the start row (one after header)
+            column_mapping['start_row'] = str(header_row + 1)
+            result[sheet_name] = column_mapping
+        else:
+            # Fall back to automatic detection
+            sheet_data = analyze_sheet(sheet)
+            if sheet_data:
+                result[sheet_name] = sheet_data
 
     return result
+
 
 def analyze_sheet(sheet) -> Dict[str, str]:
     max_row = sheet.max_row
@@ -47,7 +101,9 @@ def analyze_sheet(sheet) -> Dict[str, str]:
     field_columns['start_row'] = str(start_row)
     return field_columns
 
-def analyze_row(sheet, row: int, max_column: int, ip_pattern, services: List[str], protocols: List[str]) -> Dict[str, str]:
+
+def analyze_row(sheet, row: int, max_column: int, ip_pattern, services: List[str], protocols: List[str]) -> Dict[
+    str, str]:
     source_ips = None
     dest_ips = None
     ports_or_services = None
@@ -81,6 +137,6 @@ def analyze_row(sheet, row: int, max_column: int, ip_pattern, services: List[str
 
 # Usage example
 if __name__ == "__main__":
-    file_path = r"C:\Users\pbrehaut4\PycharmProjects\FW_Forms_pub\TEST_output.xlsx"
+    file_path = ""
     result = analyze_excel_workbook(file_path)
     print(result)
