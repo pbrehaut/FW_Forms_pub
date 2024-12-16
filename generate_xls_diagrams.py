@@ -47,7 +47,7 @@ def src_dst_permutations(src_ips, dst_ips):
             yield src_ip, dst_ip
 
 
-def generate_output(cust_rules, config_mgr, file_prefix=None):
+def generate_output(cust_rules, config_mgr, file_prefix=None, topology_exc_flows=None):
     #  Get the 1st key of the cust_rules dictionary and
     #  generate an exception if there is more than one, we only want one customer
     if len(cust_rules) > 1:
@@ -147,6 +147,14 @@ def generate_output(cust_rules, config_mgr, file_prefix=None):
 
             #  For each Topology for this customer find the firewalls and firewall flows for this permutation
             for topology_name, (diagram, mapper) in topologies.items():
+
+                #  If the topology is in the list of topologies to exclude flows from
+                #  then skip this topology
+                import topology_match
+                if topology_match.check_topology_match(src_ip, dst_ip, topology_name, topology_exc_flows):
+                    print(f"Skipping this pair due to topology exclusion: {src_ip} -> {dst_ip} in {topology_name}")
+                    continue
+
                 src_fw = mapper.find_matching_firewall(src_ip)
                 dst_fw = mapper.find_matching_firewall(dst_ip)
 
@@ -309,8 +317,13 @@ def generate_output(cust_rules, config_mgr, file_prefix=None):
 
 if __name__ == "__main__":
     config_mgr = ConfigManager('config.ini')
-    TEST_DATA = r''
+    TEST_DATA = r"C:\Users\pbrehaut4\OneDrive - DXC Production\Documents\BoQ\FCRs\Output\json_rule_dumps\BOQ_17_Dec_24_09-47-37.json"
+    topology_exc_flows = {'COR': [
+        ('10.180.0.0/14', '10.180.0.0/14'),
+    ]
+    }
+
     with open(TEST_DATA, 'r') as file:
         cust_rules = json.load(file)
-        x_str = generate_output(cust_rules, config_mgr)
+        x_str = generate_output(cust_rules, config_mgr, topology_exc_flows=topology_exc_flows)
     print(x_str)
