@@ -1,7 +1,7 @@
 {
     "TEST": [
         [
-            "Prod Servers FW1_FW2\n10.1.1.10 Server 1, 10.1.1.20 Server 2\n10.2.1.10 Server 3, 10.2.1.20 Server 4\n\n192.168.1.10 Server 1 OOB\n192.168.1.20 Server 2 OOB\n192.168.2.10 Server 3 OOB\n192.168.2.20 Server 4 OOB",
+            "Prod Servers FW1_FW2\n10.1.1.10 Server 1, 10.1.1.20 Server 2, 10.1.1.21, 10.1.1.22, 10.1.1.23\n10.2.1.10 Server 3, 10.2.1.20 Server 4\n\n192.168.1.10 Server 1 OOB\n192.168.1.20 Server 2 OOB\n192.168.2.10 Server 3 OOB\n192.168.2.20 Server 4 OOB",
             "10.200.1.20 AWS OOB Manager\n10.100.1.10 Azure Prod Manager",
             "Syslog, NTP, DNS\nSNMP Trap",
             "Management traffic ; to MGMT Server"

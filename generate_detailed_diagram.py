@@ -18,8 +18,19 @@ def process_tuples(tuple_list):
 
     return result
 
+def format_ip_list(ip_list, max_display):
+    """
+    Format the IP list based on max_display parameter.
+    If list length <= max_display, show all IPs.
+    Otherwise, show first max_display-1 IPs and the last IP.
+    """
+    if len(ip_list) <= max_display:
+        return '\n'.join(ip_list)
+    else:
+        displayed_ips = ip_list[:max_display-1] + ['...', ip_list[-1]]
+        return '\n'.join(displayed_ips)
 
-def create_graphviz_diagram(flow, ip_tuples, image_filename, src_filename, node_comments):
+def create_graphviz_diagram(flow, ip_tuples, image_filename, src_filename, node_comments, max_ips_display=5):
     dot = Digraph(comment='Network Flow Diagram')
     dot.attr(rankdir='LR')  # Left to Right layout
     dot.attr(bgcolor='#F0F8FF')  # Light blue background
@@ -29,25 +40,12 @@ def create_graphviz_diagram(flow, ip_tuples, image_filename, src_filename, node_
     # Define different color pairs (fillcolor, color)
     color_pairs = [
         ('#66B3FF', '#004080'),  # Light blue, Dark blue
-        # ('#FFB366', '#804000'),  # Light orange, Dark orange
-        # ('#99FF99', '#006600'),  # Light green, Dark green
-        # ('#FF9999', '#800000'),  # Light red, Dark red
-        # ('#E0B0FF', '#4B0082'),  # Light purple, Dark purple
-        # ('#FFD700', '#B8860B'),  # Gold, Dark goldenrod
-        # ('#98FB98', '#228B22'),  # Pale green, Forest green
-        # ('#FFA07A', '#B22222'),  # Light salmon, Firebrick
-        # ('#DDA0DD', '#8B008B'),  # Plum, Dark magenta
-        # ('#F0E68C', '#BDB76B'),  # Khaki, Dark khaki
         ('#FFDAB9', '#CD853F'),  # Peach puff, Peru
         ('#87CEFA', '#4682B4'),  # Light sky blue, Steel blue
-        # ('#98FF98', '#2E8B57'),  # Mint cream, Sea green
         ('#AFEEEE', '#5F9EA0'),  # Pale turquoise, Cadet blue
-        # ('#D8BFD8', '#9932CC'),  # Thistle, Dark orchid
-        # ('#FFFACD', '#DAA520'),  # Lemon chiffon, Goldenrod
         ('#F0FFF0', '#228B22'),  # Honeydew, Forest green
-        # ('#FFF0F5', '#C71585'),  # Lavender blush, Medium violet red
         ('#F0FFFF', '#00CED1'),  # Azure, Dark turquoise
-        ('#FAF0E6', '#D2691E')  # Linen, Chocolate
+        ('#FAF0E6', '#D2691E')   # Linen, Chocolate
     ]
 
     # Add nodes (firewalls)
@@ -67,8 +65,9 @@ def create_graphviz_diagram(flow, ip_tuples, image_filename, src_filename, node_
         src_ip.sort()
         dst_ip.sort()
 
-        src_label = f"{src_ip[0]}\n...\n{src_ip[-1]}" if len(src_ip) > 1 else src_ip[0]
-        dst_label = f"{dst_ip[0]}\n...\n{dst_ip[-1]}" if len(dst_ip) > 1 else dst_ip[0]
+        # Format IP labels using the new function
+        src_label = format_ip_list(src_ip, max_ips_display)
+        dst_label = format_ip_list(dst_ip, max_ips_display)
 
         if node_comments:
             new_comments = f"{group_diagram_comments.group_data(comments)}\\n"
