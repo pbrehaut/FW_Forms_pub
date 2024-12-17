@@ -81,6 +81,14 @@ def generate_output(cust_rules, config_mgr, file_prefix=None):
     else:
         detailed_diagrams = True
 
+    # Enable or disable the adding of comments in each end node in the diagram
+    diagram_node_comments = excel_headers.pop('diagram_node_comments', 'yes')
+    if diagram_node_comments.lower() == 'no':
+        diagram_node_comments = False
+    else:
+        diagram_node_comments = True
+
+
     #  Get the group_gateways value
     #  this will determine whether the rules are regrouped again and the gateways concatenated
     group_gateways = excel_headers.pop('group_gateways', 'no')
@@ -254,7 +262,7 @@ def generate_output(cust_rules, config_mgr, file_prefix=None):
                 path, path_rules,
                 image_filename=diagram_image_file_name,
                 src_filename=diagram_src_file_name,
-                no_comments=False,
+                node_comments=diagram_node_comments,
             )
             if diagram_file:
                 diagram_files.append(join(config_mgr.get_output_directory(cust), diagram_file))

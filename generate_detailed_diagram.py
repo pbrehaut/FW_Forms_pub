@@ -19,7 +19,7 @@ def process_tuples(tuple_list):
     return result
 
 
-def create_graphviz_diagram(flow, ip_tuples, image_filename, src_filename, no_comments=False):
+def create_graphviz_diagram(flow, ip_tuples, image_filename, src_filename, node_comments):
     dot = Digraph(comment='Network Flow Diagram')
     dot.attr(rankdir='LR')  # Left to Right layout
     dot.attr(bgcolor='#F0F8FF')  # Light blue background
@@ -70,7 +70,7 @@ def create_graphviz_diagram(flow, ip_tuples, image_filename, src_filename, no_co
         src_label = f"{src_ip[0]}\n...\n{src_ip[-1]}" if len(src_ip) > 1 else src_ip[0]
         dst_label = f"{dst_ip[0]}\n...\n{dst_ip[-1]}" if len(dst_ip) > 1 else dst_ip[0]
 
-        if not no_comments:
+        if node_comments:
             new_comments = f"{group_diagram_comments.group_data(comments)}\\n"
         else:
             new_comments = ""
