@@ -47,7 +47,7 @@ def src_dst_permutations(src_ips, dst_ips):
             yield src_ip, dst_ip
 
 
-def generate_output(cust_rules, config_mgr, file_prefix=None, topology_exc_flows=None):
+def generate_output(cust_rules, config_mgr, file_prefix=None):
     #  Get the 1st key of the cust_rules dictionary and
     #  generate an exception if there is more than one, we only want one customer
     if len(cust_rules) > 1:
@@ -103,10 +103,12 @@ def generate_output(cust_rules, config_mgr, file_prefix=None, topology_exc_flows
         fw_subnets_file = topology_dict.get('subnets')
         routes_file = topology_dict.get('routes')
         topology_file = topology_dict.get('topology')
+        exclude_flows = topology_dict.get('exclude_flows')
 
         fw_subnets_file = fw_subnets_file if fw_subnets_file else None
         routes_file = routes_file if routes_file else None
         topology_file = topology_file if topology_file else None
+        exclude_flows = exclude_flows if exclude_flows else None
 
         # Create the firewall diagram
         diagram = FirewallDiagram(topology_file) if topology_file else None
@@ -114,8 +116,16 @@ def generate_output(cust_rules, config_mgr, file_prefix=None, topology_exc_flows
         # Create the subnet firewall mapper
         mapper = SubnetFirewallMapper(fw_subnets_file, routes_file) if fw_subnets_file else None
 
+        import yaml
+        if exclude_flows:
+            # Load the YAML file
+            with open(exclude_flows, 'r') as f:
+                topology_exc_flows = yaml.safe_load(f)
+        else:
+            topology_exc_flows = None
+
         # Add the topologies to the dictionary using the subsection as the key
-        topologies[subsection] = (diagram, mapper)
+        topologies[subsection] = (diagram, mapper, topology_exc_flows)
 
     rows_to_output = []
     rules_diagrams = defaultdict(list)
@@ -146,12 +156,12 @@ def generate_output(cust_rules, config_mgr, file_prefix=None, topology_exc_flows
             #  Get the source and destination IP firewalls
 
             #  For each Topology for this customer find the firewalls and firewall flows for this permutation
-            for topology_name, (diagram, mapper) in topologies.items():
+            for topology_name, (diagram, mapper, topology_exc_flows) in topologies.items():
 
                 #  If the topology is in the list of topologies to exclude flows from
                 #  then skip this topology
                 import topology_match
-                if topology_exc_flows and topology_match.check_topology_match(src_ip, dst_ip, topology_name, topology_exc_flows):
+                if topology_exc_flows and topology_match.check_topology_match(src_ip, dst_ip, topology_exc_flows):
                     print(f"Skipping this pair due to topology exclusion: {src_ip} -> {dst_ip} in {topology_name}")
                     continue
 
@@ -264,7 +274,7 @@ def generate_output(cust_rules, config_mgr, file_prefix=None, topology_exc_flows
                 diagram_files.append(join(config_mgr.get_output_directory(cust), diagram_file))
 
     for topology, v in topologies.items():
-        diagram, _ = v
+        diagram, *_ = v
         diag_file_1_src = join(config_mgr.get_output_directory(cust), "diagram_source_files", f"{cust}_{topology}_1.txt")
         diag_file_1_image = join(config_mgr.get_output_directory(cust), "diagram_images", f"{cust}_{topology}_1.png")
         with open(diag_file_1_src, 'w') as f:
@@ -317,13 +327,9 @@ def generate_output(cust_rules, config_mgr, file_prefix=None, topology_exc_flows
 
 if __name__ == "__main__":
     config_mgr = ConfigManager('config.ini')
-    TEST_DATA = r"C:\Users\pbrehaut4\OneDrive - DXC Production\Documents\BoQ\FCRs\Output\json_rule_dumps\BOQ_17_Dec_24_09-47-37.json"
-    topology_exc_flows = {'COR': [
-        ('10.180.0.0/14', '10.180.0.0/14'),
-    ]
-    }
+    TEST_DATA = r""
 
     with open(TEST_DATA, 'r') as file:
         cust_rules = json.load(file)
-        x_str = generate_output(cust_rules, config_mgr, topology_exc_flows=topology_exc_flows)
+        x_str = generate_output(cust_rules, config_mgr)
     print(x_str)
