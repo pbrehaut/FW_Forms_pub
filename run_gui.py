@@ -78,23 +78,27 @@ class NetworkInfoGUI:
             if not sheets_rule_spec:
                 messagebox.showerror("Error", "No valid sheets found.")
                 return
-            for sheet_name, rule_spec in sheets_rule_spec.items():
-                customer = customer_var.get()
-                start_row = rule_spec['start_row']
-                source_ips = rule_spec['source_ips']
-                dest_ips = rule_spec['dest_ips']
-                services = rule_spec['services']
-                comments = rule_spec['comments']
 
-                try:
-                    self.results = self.read_excel_data(file_path, customer, sheet_name, int(start_row), source_ips,
-                                                        dest_ips, services, comments)
-                    self.process_results()
-                except Exception as e:
-                    messagebox.showerror("Error", f"An error occurred: {str(e)}")
+            # Store the first sheet's specifications
+            sheet_name = list(sheets_rule_spec.keys())[0]
+            rule_spec = sheets_rule_spec[sheet_name]
 
-            excel_window.destroy()
-            self.create_initial_form()
+            # Store the results without processing them
+            customer = customer_var.get()
+            start_row = rule_spec['start_row']
+            source_ips = rule_spec['source_ips']
+            dest_ips = rule_spec['dest_ips']
+            services = rule_spec['services']
+            comments = rule_spec['comments']
+
+            try:
+                self.results = self.read_excel_data(file_path, customer, sheet_name, int(start_row), source_ips,
+                                                    dest_ips, services, comments)
+                messagebox.showinfo("Success", "Data processed successfully!")
+                excel_window.destroy()
+                self.load_excel_to_manual_form()  # Load the manual form instead of processing directly
+            except Exception as e:
+                messagebox.showerror("Error", f"An error occurred: {str(e)}")
 
         process_button = tk.Button(excel_window, text="Process Excel", command=process_excel_auto)
         process_button.pack(pady=10)
