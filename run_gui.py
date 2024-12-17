@@ -642,6 +642,8 @@ class NetworkInfoGUI:
             config[excel_section] = {
                 'group_gateways': 'yes',
                 'detailed_diagrams': 'no',
+                'diagram_node_comments': 'no',
+                'diagram_max_ips': '3',
                 'include_flow_count': 'no',
                 'output_headers': 'yes',
                 'acl_sheet': 'ACL',
