@@ -595,7 +595,8 @@ class NetworkInfoGUI:
                 var_dict[option] = tk.StringVar(value=value)
                 option_menu = ttk.Combobox(edit_window, textvariable=var_dict[option], values=files, width=40)
                 option_menu.grid(row=i, column=1, padx=10, pady=5)
-            elif option in ["group_gateways", "detailed_diagrams", "include_flow_count", "output_headers"]:
+            elif option in ["group_gateways", "detailed_diagrams", "include_flow_count", "output_headers",
+                            "diagram_node_comments"]:
                 var_dict[option] = tk.StringVar(value=value)
                 option_menu = ttk.Combobox(edit_window, textvariable=var_dict[option], values=["yes", "no"])
                 option_menu.grid(row=i, column=1, padx=10, pady=5)
