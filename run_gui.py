@@ -90,11 +90,8 @@ class NetworkInfoGUI:
                     self.results = self.read_excel_data(file_path, customer, sheet_name, int(start_row), source_ips,
                                                         dest_ips, services, comments)
                     self.process_results()
-                    # generate_xls_diagrams.generate_output(self.results, config_mgr, sheet_name.replace(" ", "_"))
-                    # messagebox.showinfo("Success", f"Data processed successfully for {sheet_name}!")
                 except Exception as e:
-                    raise
-                    # messagebox.showerror("Error", f"An error occurred: {str(e)}")
+                    messagebox.showerror("Error", f"An error occurred: {str(e)}")
 
             excel_window.destroy()
             self.create_initial_form()
