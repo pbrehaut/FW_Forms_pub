@@ -151,7 +151,7 @@ def generate_output(cust_rules, config_mgr, file_prefix=None, topology_exc_flows
                 #  If the topology is in the list of topologies to exclude flows from
                 #  then skip this topology
                 import topology_match
-                if topology_match.check_topology_match(src_ip, dst_ip, topology_name, topology_exc_flows):
+                if topology_exc_flows and topology_match.check_topology_match(src_ip, dst_ip, topology_name, topology_exc_flows):
                     print(f"Skipping this pair due to topology exclusion: {src_ip} -> {dst_ip} in {topology_name}")
                     continue
 
