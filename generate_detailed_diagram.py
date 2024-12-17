@@ -30,7 +30,7 @@ def format_ip_list(ip_list, max_display):
         displayed_ips = ip_list[:max_display-1] + ['...', ip_list[-1]]
         return '\n'.join(displayed_ips)
 
-def create_graphviz_diagram(flow, ip_tuples, image_filename, src_filename, node_comments, max_ips_display=5):
+def create_graphviz_diagram(flow, ip_tuples, image_filename, src_filename, node_comments, max_ips_display):
     dot = Digraph(comment='Network Flow Diagram')
     dot.attr(rankdir='LR')  # Left to Right layout
     dot.attr(bgcolor='#F0F8FF')  # Light blue background

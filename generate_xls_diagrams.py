@@ -104,6 +104,13 @@ def generate_output(cust_rules, config_mgr, file_prefix=None):
     else:
         inc_flow_count = True
 
+    diagram_max_ips = excel_headers.pop('diagram_max_ips', '3')
+    try:
+        diagram_max_ips = int(diagram_max_ips)
+    except ValueError:
+        diagram_max_ips = 3
+
+
     # Iterate through all subsections for the customer
     for subsection in config_mgr.get_customer_subsections(cust):
         topology_dict = config_mgr.get_topology(cust, subsection)
@@ -263,6 +270,7 @@ def generate_output(cust_rules, config_mgr, file_prefix=None):
                 image_filename=diagram_image_file_name,
                 src_filename=diagram_src_file_name,
                 node_comments=diagram_node_comments,
+                max_ips_display=diagram_max_ips,
             )
             if diagram_file:
                 diagram_files.append(join(config_mgr.get_output_directory(cust), diagram_file))
