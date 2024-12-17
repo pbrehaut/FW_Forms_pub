@@ -19,7 +19,7 @@ def process_tuples(tuple_list):
     return result
 
 
-def create_graphviz_diagram(flow, ip_tuples, image_filename, src_filename):
+def create_graphviz_diagram(flow, ip_tuples, image_filename, src_filename, no_comments=False):
     dot = Digraph(comment='Network Flow Diagram')
     dot.attr(rankdir='LR')  # Left to Right layout
     dot.attr(bgcolor='#F0F8FF')  # Light blue background
@@ -70,13 +70,18 @@ def create_graphviz_diagram(flow, ip_tuples, image_filename, src_filename):
         src_label = f"{src_ip[0]}\n...\n{src_ip[-1]}" if len(src_ip) > 1 else src_ip[0]
         dst_label = f"{dst_ip[0]}\n...\n{dst_ip[-1]}" if len(dst_ip) > 1 else dst_ip[0]
 
+        if not no_comments:
+            new_comments = f"{group_diagram_comments.group_data(comments)}\\n"
+        else:
+            new_comments = ""
+
         # Create source IP node
         src_node = f"src_{idx}"
-        dot.node(src_node, f"{group_diagram_comments.group_data(comments)}\\n{src_label}", shape='ellipse', style='filled', fillcolor=fillcolor, color=color)
+        dot.node(src_node, f"{new_comments}{src_label}", shape='ellipse', style='filled', fillcolor=fillcolor, color=color)
 
         # Create destination IP node
         dst_node = f"dst_{idx}"
-        dot.node(dst_node, f"{group_diagram_comments.group_data(comments)}\\n{dst_label}", shape='ellipse', style='filled', fillcolor=fillcolor, color=color)
+        dot.node(dst_node, f"{new_comments}{dst_label}", shape='ellipse', style='filled', fillcolor=fillcolor, color=color)
 
         # Connect source IP to first firewall
         dot.edge(src_node, flow[0], label='src', color=color)

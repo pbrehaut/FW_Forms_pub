@@ -253,7 +253,8 @@ def generate_output(cust_rules, config_mgr, file_prefix=None):
             diagram_file = generate_detailed_diagram.create_graphviz_diagram(
                 path, path_rules,
                 image_filename=diagram_image_file_name,
-                src_filename=diagram_src_file_name
+                src_filename=diagram_src_file_name,
+                no_comments=False,
             )
             if diagram_file:
                 diagram_files.append(join(config_mgr.get_output_directory(cust), diagram_file))
@@ -327,7 +328,7 @@ def generate_output(cust_rules, config_mgr, file_prefix=None):
 
 if __name__ == "__main__":
     config_mgr = ConfigManager('config.ini')
-    TEST_DATA = r""
+    TEST_DATA = r"Sample_data/TEST_Data.json"
 
     with open(TEST_DATA, 'r') as file:
         cust_rules = json.load(file)
