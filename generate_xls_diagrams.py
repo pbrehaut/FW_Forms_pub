@@ -57,6 +57,8 @@ def generate_output(cust_rules, config_mgr, file_prefix=None):
         cust = list(cust_rules.keys())[0]
 
     rules = cust_rules[cust]
+    # Assuming your list is named 'data'
+    rules = [[item.replace('_x000D_', '') for item in sublist] for sublist in rules]
     # create the output directory if it doesn't exist
     create_subdirectories(config_mgr.get_output_directory(cust))
 
