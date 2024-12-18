@@ -5,7 +5,7 @@ from typing import Dict, List, Tuple
 def check_topology_match(
         src_ip: IPv4Interface,
         dst_ip: IPv4Interface,
-        topology_exc_flows: Dict[str, List[Tuple[str, str]]]
+        topology_flows: Dict[str, List[Tuple[str, str]]]
 ) -> bool:
     """
     Check if source and destination IPs match the ranges defined in topology_exc_flows
@@ -21,7 +21,7 @@ def check_topology_match(
     """
 
     # Check each flow pair in the topology
-    for pair in topology_exc_flows['excludes']:
+    for pair in topology_flows:
         src_ranges = pair['src']
         dst_ranges = pair['dst']
         # Convert string ranges to IPv4Network objects

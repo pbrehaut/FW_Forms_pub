@@ -16,6 +16,7 @@ from combine_diagrams import combine_tuple_fields
 import os
 import ip_headings
 import convert_flow_charts
+import topology_match
 
 
 def create_subdirectories(base_dir):
@@ -135,12 +136,15 @@ def generate_output(cust_rules, config_mgr, file_prefix=None):
         if exclude_flows:
             # Load the YAML file
             with open(exclude_flows, 'r') as f:
-                topology_exc_flows = yaml.safe_load(f)
+                flows = yaml.safe_load(f)
+                topology_exc_flows = flows.get('excludes')
+                topology_inc_flows = flows.get('includes')
         else:
             topology_exc_flows = None
+            topology_inc_flows = None
 
         # Add the topologies to the dictionary using the subsection as the key
-        topologies[subsection] = (diagram, mapper, topology_exc_flows)
+        topologies[subsection] = (diagram, mapper, topology_exc_flows,  topology_inc_flows)
 
     rows_to_output = []
     rules_diagrams = defaultdict(list)
@@ -170,15 +174,25 @@ def generate_output(cust_rules, config_mgr, file_prefix=None):
             #  For each permutation of source to destination IP
             #  Get the source and destination IP firewalls
 
+            # Check if there is a match on a flow include by going through all topologies
+            # and checking if the source and destination IP's match the include flows
+            set_topology = None
+            for topology_name, (diagram, mapper, _, topology_inc_flows) in topologies.items():
+                if topology_inc_flows:
+                    if topology_match.check_topology_match(src_ip, dst_ip, topology_inc_flows):
+                        print(f"Matched this pair due to topology inclusion: {src_ip} -> {dst_ip} in {topology_name}")
+                        set_topology = topology_name
+                        break
+
             #  For each Topology for this customer find the firewalls and firewall flows for this permutation
-            for topology_name, (diagram, mapper, topology_exc_flows) in topologies.items():
+            for topology_name, (diagram, mapper, topology_exc_flows, _) in topologies.items():
 
                 #  If the topology is in the list of topologies to exclude flows from
                 #  then skip this topology
-                import topology_match
-                if topology_exc_flows and topology_match.check_topology_match(src_ip, dst_ip, topology_exc_flows):
-                    print(f"Skipping this pair due to topology exclusion: {src_ip} -> {dst_ip} in {topology_name}")
-                    continue
+                if not set_topology:
+                    if topology_exc_flows and topology_match.check_topology_match(src_ip, dst_ip, topology_exc_flows):
+                        print(f"Skipping this pair due to topology exclusion: {src_ip} -> {dst_ip} in {topology_name}")
+                        continue
 
                 src_fw = mapper.find_matching_firewall(src_ip)
                 dst_fw = mapper.find_matching_firewall(dst_ip)
@@ -199,6 +213,12 @@ def generate_output(cust_rules, config_mgr, file_prefix=None):
                 flow = diagram.find_flows_with_firewalls(src_fw, dst_fw)
                 #  Pick the minimum length flow i.e. the shortest path in the topology
                 flow = min(flow, key=len)
+
+                #  Only add if the set_topology is None or the topology_name is the same as the set_topology
+                #  This will allow the user to exclude flows from a topology if they want to
+                if set_topology:
+                    if topology_name != set_topology:
+                        continue
                 rule_src_dst_permutations.append(((src_ip, dst_ip), topology_name, flow))
 
         # Expand out from the path determined for this permutation all the gateways
@@ -344,7 +364,7 @@ def generate_output(cust_rules, config_mgr, file_prefix=None):
 
 if __name__ == "__main__":
     config_mgr = ConfigManager('config.ini')
-    TEST_DATA = r""
+    TEST_DATA = r"C:\Users\pbrehaut4\OneDrive - DXC Production\Documents\BoQ\FCRs\Output\json_rule_dumps\BOQ_17_Dec_24_09-38-24.json"
 
     with open(TEST_DATA, 'r') as file:
         cust_rules = json.load(file)
