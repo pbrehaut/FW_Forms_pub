@@ -1,7 +1,7 @@
 from datetime import datetime
 import json
 from os.path import join
-
+import yaml
 import diagram_renderer
 from firewalldiagram import FirewallDiagram
 from subnetfirewallmapper import SubnetFirewallMapper
@@ -16,6 +16,7 @@ from combine_diagrams import combine_tuple_fields
 import os
 import ip_headings
 import convert_flow_charts
+import topology_match
 
 
 def create_subdirectories(base_dir):
@@ -56,6 +57,8 @@ def generate_output(cust_rules, config_mgr, file_prefix=None):
         cust = list(cust_rules.keys())[0]
 
     rules = cust_rules[cust]
+    rules = [[item.replace('_x000D_', '') for item in sublist] for sublist in rules]
+
     # create the output directory if it doesn't exist
     create_subdirectories(config_mgr.get_output_directory(cust))
 
@@ -131,7 +134,6 @@ def generate_output(cust_rules, config_mgr, file_prefix=None):
         # Create the subnet firewall mapper
         mapper = SubnetFirewallMapper(fw_subnets_file, routes_file) if fw_subnets_file else None
 
-        import yaml
         if exclude_flows:
             # Load the YAML file
             with open(exclude_flows, 'r') as f:
@@ -175,7 +177,6 @@ def generate_output(cust_rules, config_mgr, file_prefix=None):
 
                 #  If the topology is in the list of topologies to exclude flows from
                 #  then skip this topology
-                import topology_match
                 if topology_exc_flows and topology_match.check_topology_match(src_ip, dst_ip, topology_exc_flows):
                     print(f"Skipping this pair due to topology exclusion: {src_ip} -> {dst_ip} in {topology_name}")
                     continue

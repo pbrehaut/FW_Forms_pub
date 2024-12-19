@@ -21,7 +21,7 @@ def check_topology_match(
     """
 
     # Check each flow pair in the topology
-    for pair in topology_exc_flows['excludes']:
+    for pair in topology_exc_flows:
         src_ranges = pair['src']
         dst_ranges = pair['dst']
         # Convert string ranges to IPv4Network objects
