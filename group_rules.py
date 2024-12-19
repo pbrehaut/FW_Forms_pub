@@ -32,9 +32,6 @@ def group_and_collapse(data):
         first_elements = set(elem[0] for elem in group)
         second_elements = set(elem[1] for elem in group)
 
-        # collapsed_first = '\n'.join(sorted(str(x) for x in first_elements))
-        # collapsed_second = '\n'.join(sorted(str(x) for x in second_elements))
-
         collapsed_first = [str(x) for x in first_elements]
         collapsed_second = [str(x) for x in second_elements]
 
