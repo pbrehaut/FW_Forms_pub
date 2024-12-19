@@ -113,7 +113,8 @@ def generate_output(cust_rules, config_mgr, file_prefix=None):
     except ValueError:
         diagram_max_ips = 3
 
-
+    topology_inc_flows = {}
+    topology_exc_flows = {}
     # Iterate through all subsections for the customer
     for subsection in config_mgr.get_customer_subsections(cust):
         topology_dict = config_mgr.get_topology(cust, subsection)
@@ -134,10 +135,11 @@ def generate_output(cust_rules, config_mgr, file_prefix=None):
 
         with open(fw_subnets_file, 'r') as f:
             yaml_data = yaml.safe_load(f)
-            topology_exc_flows = yaml_data.get('exclude_flows', None)
+            topology_exc_flows[subsection] = yaml_data.get('exclude_flows', None)
+            topology_inc_flows[subsection] = yaml_data.get('include_flows', None)
 
         # Add the topologies to the dictionary using the subsection as the key
-        topologies[subsection] = (diagram, mapper, topology_exc_flows)
+        topologies[subsection] = (diagram, mapper)
 
     rows_to_output = []
     rules_diagrams = defaultdict(list)
@@ -168,13 +170,7 @@ def generate_output(cust_rules, config_mgr, file_prefix=None):
             #  Get the source and destination IP firewalls
 
             #  For each Topology for this customer find the firewalls and firewall flows for this permutation
-            for topology_name, (diagram, mapper, topology_exc_flows) in topologies.items():
-
-                #  If the topology is in the list of topologies to exclude flows from
-                #  then skip this topology
-                if topology_exc_flows and topology_match.check_topology_match(src_ip, dst_ip, topology_exc_flows):
-                    print(f"Skipping this pair due to topology exclusion: {src_ip} -> {dst_ip} in {topology_name}")
-                    continue
+            for topology_name, (diagram, mapper) in topologies.items():
 
                 src_fw = mapper.find_matching_firewall(src_ip)
                 dst_fw = mapper.find_matching_firewall(dst_ip)
@@ -200,6 +196,10 @@ def generate_output(cust_rules, config_mgr, file_prefix=None):
         # Expand out from the path determined for this permutation all the gateways
         # that require this rule to be installed on
         # this will allow regrouping based on the installed on gateway
+        import filter_include_flows
+        import filter_excluded_flows
+        rule_src_dst_permutations = filter_include_flows.filter_ip_data(rule_src_dst_permutations, topology_inc_flows)
+        rule_src_dst_permutations  = filter_excluded_flows.filter_ip_data(rule_src_dst_permutations, topology_exc_flows)
         rule_src_dst_permutations = transform_network_data(rule_src_dst_permutations)
 
         # Group the permutations/combinations on the topology and the install on firewall
@@ -340,7 +340,7 @@ def generate_output(cust_rules, config_mgr, file_prefix=None):
 
 if __name__ == "__main__":
     config_mgr = ConfigManager('config.ini')
-    TEST_DATA = r""
+    TEST_DATA = r"Sample_data/filter_flows.json"
 
     with open(TEST_DATA, 'r') as file:
         cust_rules = json.load(file)

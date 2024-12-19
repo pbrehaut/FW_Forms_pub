@@ -44,7 +44,7 @@ class SubnetFirewallMapper:
 
         if yaml_data:
             for firewall, subnets in yaml_data.items():
-                if firewall == 'exclude_flows':
+                if firewall in ('exclude_flows', 'include_flows'):
                     continue
                 for subnet in subnets:
                     subnet_firewall_map[ipaddress.ip_network(subnet)] = firewall
