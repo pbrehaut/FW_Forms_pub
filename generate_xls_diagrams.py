@@ -121,12 +121,10 @@ def generate_output(cust_rules, config_mgr, file_prefix=None):
         fw_subnets_file = topology_dict.get('subnets')
         routes_file = topology_dict.get('routes')
         topology_file = topology_dict.get('topology')
-        exclude_flows = topology_dict.get('exclude_flows')
 
         fw_subnets_file = fw_subnets_file if fw_subnets_file else None
         routes_file = routes_file if routes_file else None
         topology_file = topology_file if topology_file else None
-        exclude_flows = exclude_flows if exclude_flows else None
 
         # Create the firewall diagram
         diagram = FirewallDiagram(topology_file) if topology_file else None
@@ -134,12 +132,9 @@ def generate_output(cust_rules, config_mgr, file_prefix=None):
         # Create the subnet firewall mapper
         mapper = SubnetFirewallMapper(fw_subnets_file, routes_file) if fw_subnets_file else None
 
-        if exclude_flows:
-            # Load the YAML file
-            with open(exclude_flows, 'r') as f:
-                topology_exc_flows = yaml.safe_load(f)
-        else:
-            topology_exc_flows = None
+        with open(fw_subnets_file, 'r') as f:
+            yaml_data = yaml.safe_load(f)
+            topology_exc_flows = yaml_data.get('exclude_flows', None)
 
         # Add the topologies to the dictionary using the subsection as the key
         topologies[subsection] = (diagram, mapper, topology_exc_flows)
