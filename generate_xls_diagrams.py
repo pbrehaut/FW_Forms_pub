@@ -16,7 +16,6 @@ from combine_diagrams import combine_tuple_fields
 import os
 import ip_headings
 import convert_flow_charts
-import topology_match
 
 
 def create_subdirectories(base_dir):
