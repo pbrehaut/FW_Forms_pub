@@ -73,7 +73,7 @@ def group_and_collapse(data, zone_rules):
         zone_specific_pairs[zone][(specific_fw, tuple(firewalls))].add((str(src), str(dst)))
 
     # Second pass: validate and split groups
-    final_zone_pairs = defaultdict(lambda: defaultdict(set))
+    final_zone_pairs = []
 
     for zone, fw_pairs in zone_specific_pairs.items():
         for fw_key, pairs in fw_pairs.items():
@@ -81,13 +81,11 @@ def group_and_collapse(data, zone_rules):
 
             # Keep valid pairs in their current group
             if valid_pairs:
-                final_zone_pairs[zone][fw_key].update(valid_pairs)
+                final_zone_pairs.append((zone, fw_key, valid_pairs))
 
             # Move pairs to their correct zones
-            for pair in pairs_to_move:
-                for target_zone, allowed in allowed_pairs.items():
-                    if pair in allowed:
-                        final_zone_pairs[target_zone][fw_key].add(pair)
+            if pairs_to_move:
+                final_zone_pairs.extend([(zone, fw_key, p) for p in pairs_to_move])
 
     # Create final result structure
     final_result = defaultdict(lambda: defaultdict(list))
