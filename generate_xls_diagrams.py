@@ -9,6 +9,7 @@ from subnetfirewallmapper import SubnetFirewallMapper
 from findips import find_ip_addresses
 from configmanager import ConfigManager
 import group_rules
+import group_rules_topologies
 from data_transform_funcs import *
 from write_excel_from_tmpl import *
 import generate_diagram
@@ -206,7 +207,7 @@ def generate_output(cust_rules, config_mgr, file_prefix=None):
         # Subgroup by flow/path.
         # Each item under the grouping of install on a topology will have
         # its own path and the source and destination IPs for that path
-        new_rule = group_rules.group_and_collapse(rule_src_dst_permutations)
+        new_rule = group_rules_topologies.group_and_collapse(rule_src_dst_permutations, topology_inc_flows)
 
         # For each grouping of install on and topology concatenate and format all rows under it
         # which are made up of the different paths/flows
