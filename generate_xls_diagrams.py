@@ -199,7 +199,7 @@ def generate_output(cust_rules, config_mgr, file_prefix=None):
         import filter_include_flows
         import filter_excluded_flows
         rule_src_dst_permutations = filter_include_flows.filter_ip_data(rule_src_dst_permutations, topology_inc_flows)
-        rule_src_dst_permutations  = filter_excluded_flows.filter_ip_data(rule_src_dst_permutations, topology_exc_flows)
+        rule_src_dst_permutations = filter_excluded_flows.filter_ip_data(rule_src_dst_permutations, topology_exc_flows)
         rule_src_dst_permutations = transform_network_data(rule_src_dst_permutations)
 
         # Group the permutations/combinations on the topology and the install on firewall
