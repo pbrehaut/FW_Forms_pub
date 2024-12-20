@@ -1,3 +1,4 @@
+from collections import defaultdict
 from datetime import datetime
 import json
 from os.path import join
@@ -7,7 +8,7 @@ from firewalldiagram import FirewallDiagram
 from subnetfirewallmapper import SubnetFirewallMapper
 from findips import find_ip_addresses
 from configmanager import ConfigManager
-from group_rules import *
+import group_rules
 from data_transform_funcs import *
 from write_excel_from_tmpl import *
 import generate_diagram
@@ -205,7 +206,7 @@ def generate_output(cust_rules, config_mgr, file_prefix=None):
         # Subgroup by flow/path.
         # Each item under the grouping of install on a topology will have
         # its own path and the source and destination IPs for that path
-        new_rule = group_and_collapse(rule_src_dst_permutations)
+        new_rule = group_rules.group_and_collapse(rule_src_dst_permutations)
 
         # For each grouping of install on and topology concatenate and format all rows under it
         # which are made up of the different paths/flows
@@ -319,7 +320,7 @@ def generate_output(cust_rules, config_mgr, file_prefix=None):
         if group_gateways:
             # Group together any rows that have the same source, destination, port and comments but
             # different install on firewalls and concatenate the install on firewalls
-            rows_to_output = group_and_concat_gateways(rows_to_output)
+            rows_to_output = group_rules.group_and_concat_gateways(rows_to_output)
         if file_prefix:
             file_prefix = f"_{file_prefix}"
         else:
