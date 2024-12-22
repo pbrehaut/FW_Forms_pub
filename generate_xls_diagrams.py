@@ -17,7 +17,8 @@ from combine_diagrams import combine_tuple_fields
 import os
 import ip_headings
 import convert_flow_charts
-
+import filter_include_flows
+import filter_excluded_flows
 
 def create_subdirectories(base_dir):
     subdirectories = [
@@ -196,8 +197,6 @@ def generate_output(cust_rules, config_mgr, file_prefix=None):
         # Expand out from the path determined for this permutation all the gateways
         # that require this rule to be installed on
         # this will allow regrouping based on the installed on gateway
-        import filter_include_flows
-        import filter_excluded_flows
         rule_src_dst_permutations = filter_include_flows.filter_ip_data(rule_src_dst_permutations, topology_inc_flows)
         rule_src_dst_permutations = filter_excluded_flows.filter_ip_data(rule_src_dst_permutations, topology_exc_flows)
         rule_src_dst_permutations = transform_network_data(rule_src_dst_permutations)
