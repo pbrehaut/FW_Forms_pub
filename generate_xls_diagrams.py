@@ -217,23 +217,19 @@ def generate_output(cust_rules, config_mgr, file_prefix=None):
         # Add in all the flows grouped on path to create the diagrams and to avoid duplicating the same diagram.
         # The rule IDs and flows will be added to the endpoints for the grouped path/flow.
         # This will allow the user to map back endpoints on the diagram to flows in the rule set
-        for topology_install_on, paths in new_rule.items():
+        for topology, install_on_path, ip_pairs in new_rule:
             src_list = []
             dst_list = []
             paths_list = []
-            topology, install_on = topology_install_on
+            install_on, path = install_on_path
             new_rule_id = f"{str(original_rule_id)}:{topology}:{install_on}"
-            flow_count = 1
-            for path, (src, dst, *_) in paths.items():
-                rules_diagrams[path].append((src, dst, f"{new_rule_id}, flow {flow_count}"))
-                path_joined = str(flow_count) + ': ' + ' --> '.join(path)
-                src_list.extend([(x, flow_count) for x in src])
-                dst_list.extend([(x, flow_count) for x in dst])
-                paths_list.append(path_joined)
-                flow_count += 1
-            # Swap back in the original text entered by the user
-            src_list = [(src_ip_full_text_mapping.get(ip, ip), fc) for ip, fc in src_list]
-            dst_list = [(dst_ip_full_text_mapping.get(ip, ip), fc) for ip, fc in dst_list]
+
+            src_list = [src_ip_full_text_mapping.get(ip, ip) for ip, _ in ip_pairs]
+            dst_list = [src_ip_full_text_mapping.get(ip, ip) for _, ip in ip_pairs]
+
+            # # Swap back in the original text entered by the user
+            # src_list = [(src_ip_full_text_mapping.get(ip, ip), fc) for ip, fc in src_list]
+            # dst_list = [(dst_ip_full_text_mapping.get(ip, ip), fc) for ip, fc in dst_list]
 
             src_headings_ip = defaultdict(list)
             dst_headings_ip = defaultdict(list)

@@ -87,17 +87,4 @@ def group_and_collapse(data, zone_rules):
             if pairs_to_move:
                 final_zone_pairs.extend([(zone, fw_key, p) for p in pairs_to_move])
 
-    # Create final result structure
-    final_result = defaultdict(lambda: defaultdict(list))
-
-    for zone, fw_pairs in final_zone_pairs.items():
-        for (specific_fw, firewalls), ip_pairs in fw_pairs.items():
-            main_key = (zone, specific_fw)
-            sub_key = firewalls
-
-            sources = sorted({pair[0] for pair in ip_pairs})
-            dests = sorted({pair[1] for pair in ip_pairs})
-
-            final_result[main_key][sub_key] = (sources, dests, zone, set(firewalls), specific_fw)
-
-    return dict(final_result)
+    return final_zone_pairs
