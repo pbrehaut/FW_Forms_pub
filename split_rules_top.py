@@ -7,6 +7,7 @@ import ip_headings
 import filter_include_flows
 import filter_excluded_flows
 import generate_xls_diagrams
+import group_by_top
 
 
 
@@ -110,9 +111,12 @@ def split_rules(cust_rules, config_mgr):
         # Expand out from the path determined for this permutation all the gateways
         # that require this rule to be installed on
         # this will allow regrouping based on the installed on gateway
-        rule_src_dst_permutations = filter_include_flows.filter_ip_data(rule_src_dst_permutations, topology_inc_flows)
-        rule_src_dst_permutations = filter_excluded_flows.filter_ip_data(rule_src_dst_permutations, topology_exc_flows)
 
+        rule_src_dst_permutations = group_by_top.group_by_second_element(rule_src_dst_permutations)
+
+        new_rules = {}
+        for topology, rules in rule_src_dst_permutations.items():
+            new_rules[topology] = filter_include_flows.filter_ip_data(rule_src_dst_permutations, topology_inc_flows)
 
         # For each grouping of install on and topology concatenate and format all rows under it
         # which are made up of the different paths/flows
@@ -122,11 +126,11 @@ def split_rules(cust_rules, config_mgr):
         # Add in all the flows grouped on path to create the diagrams and to avoid duplicating the same diagram.
         # The rule IDs and flows will be added to the endpoints for the grouped path/flow.
         # This will allow the user to map back endpoints on the diagram to flows in the rule set
-        for rule in rule_src_dst_permutations:
+        for topology, rule in new_rules.items():
             src_list = []
             dst_list = []
 
-            src, dst, topology, flow = rule
+            src, dst = rule
 
             src_list.extend([(x, 0) for x in src])
             dst_list.extend([(x, 0) for x in dst])

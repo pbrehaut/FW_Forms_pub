@@ -52,6 +52,11 @@ def src_dst_permutations(src_ips, dst_ips):
 def generate_output(cust_rules, config_mgr, file_prefix=None):
     #  Get the 1st key of the cust_rules dictionary and
     #  generate an exception if there is more than one, we only want one customer
+
+    import split_rules_top
+    split_rules_top.split_rules(cust_rules, config_mgr)
+
+
     if len(cust_rules) > 1:
         raise Exception("Only one customer can be processed at a time")
     else:
