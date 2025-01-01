@@ -4,6 +4,7 @@ from typing import List, Tuple, Dict, Optional
 
 def filter_ip_data(
         data: List[Tuple[Tuple[IPv4Interface, IPv4Interface], str, List[str]]],
+        topology: str,
         excludes: Dict[str, Optional[List[Dict[str, List[str]]]]]
 ) -> List[Tuple[Tuple[IPv4Interface, IPv4Interface], str, List[str]]]:
     """
@@ -28,7 +29,7 @@ def filter_ip_data(
 
     result = []
     for item in data:
-        (src_ip, dst_ip), topology, devices = item
+        (src_ip, dst_ip) = item
 
         # Skip if topology has no exclude rules
         if excludes.get(topology) is None:

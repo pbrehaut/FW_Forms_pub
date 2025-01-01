@@ -114,7 +114,7 @@ def split_rules(cust_rules, config_mgr):
 
         new_rules = {}
         for topology, rules in rule_src_dst_permutations.items():
-            new_rules[topology] = filter_excluded_flows.filter_ip_data(rule_src_dst_permutations, topology_inc_flows)
+            new_rules[topology] = filter_excluded_flows.filter_ip_data(rules, topology, topology_exc_flows)
 
         # For each grouping of install on and topology concatenate and format all rows under it
         # which are made up of the different paths/flows
