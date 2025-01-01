@@ -4,11 +4,9 @@ from firewalldiagram import FirewallDiagram
 from subnetfirewallmapper import SubnetFirewallMapper
 from findips import find_ip_addresses
 import ip_headings
-import filter_include_flows
 import filter_excluded_flows
 import generate_xls_diagrams
 import group_by_top
-
 
 
 def split_rules(cust_rules, config_mgr):
@@ -116,7 +114,7 @@ def split_rules(cust_rules, config_mgr):
 
         new_rules = {}
         for topology, rules in rule_src_dst_permutations.items():
-            new_rules[topology] = filter_include_flows.filter_ip_data(rule_src_dst_permutations, topology_inc_flows)
+            new_rules[topology] = filter_excluded_flows.filter_ip_data(rule_src_dst_permutations, topology_inc_flows)
 
         # For each grouping of install on and topology concatenate and format all rows under it
         # which are made up of the different paths/flows
