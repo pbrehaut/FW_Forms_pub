@@ -10,7 +10,7 @@ import generate_xls_diagrams
 
 
 
-def generate_output(cust_rules, config_mgr, file_prefix=None):
+def split_rules(cust_rules, config_mgr):
     #  Get the 1st key of the cust_rules dictionary and
     #  generate an exception if there is more than one, we only want one customer
     if len(cust_rules) > 1:
@@ -112,3 +112,39 @@ def generate_output(cust_rules, config_mgr, file_prefix=None):
         # this will allow regrouping based on the installed on gateway
         rule_src_dst_permutations = filter_include_flows.filter_ip_data(rule_src_dst_permutations, topology_inc_flows)
         rule_src_dst_permutations = filter_excluded_flows.filter_ip_data(rule_src_dst_permutations, topology_exc_flows)
+
+
+        # For each grouping of install on and topology concatenate and format all rows under it
+        # which are made up of the different paths/flows
+        # add in a flow count ID to allow the user to print this out
+        # if they want to know the individual flows within the rule
+        # Add back in group headings and host descriptions
+        # Add in all the flows grouped on path to create the diagrams and to avoid duplicating the same diagram.
+        # The rule IDs and flows will be added to the endpoints for the grouped path/flow.
+        # This will allow the user to map back endpoints on the diagram to flows in the rule set
+        for rule in rule_src_dst_permutations:
+            src_list = []
+            dst_list = []
+
+            src, dst, topology, flow = rule
+
+            src_list.extend([(x, 0) for x in src])
+            dst_list.extend([(x, 0) for x in dst])
+
+            # Swap back in the original text entered by the user
+            src_list = [(src_ip_full_text_mapping.get(ip, ip), fc) for ip, fc in src_list]
+            dst_list = [(dst_ip_full_text_mapping.get(ip, ip), fc) for ip, fc in dst_list]
+
+            src_headings_ip = defaultdict(list)
+            dst_headings_ip = defaultdict(list)
+
+            for ip, _ in src_list:
+                src_headings_ip[src_headings[ip]].append(ip)
+
+            for ip, _ in dst_list:
+                dst_headings_ip[dst_headings[ip]].append(ip)
+
+            src_str = generate_xls_diagrams.format_ips_headings(src_headings_ip)
+            dst_str = generate_xls_diagrams.format_ips_headings(dst_headings_ip)
+
+            rows_to_output.append((src_str, dst_str, port, comment))
