@@ -5,10 +5,12 @@ from typing import Dict, Optional, Union, List, Tuple
 
 class SubnetFirewallMapper:
     def __init__(self, yaml_file_path: str, route_dump_path: Optional[str] = None):
+        self.node_types = {}
         self.valid_firewalls = set()
         self.yaml_file_path = yaml_file_path
         self.route_dump_path = route_dump_path
         self.subnet_firewall_map = self._create_subnet_firewall_map()
+
 
     def _load_yaml_data(self) -> Optional[Dict]:
         try:
@@ -45,6 +47,7 @@ class SubnetFirewallMapper:
         if yaml_data:
             for firewall, firewall_attrs in yaml_data.items():
                 subnets = firewall_attrs.get('subnets', [])
+                self.node_types[firewall] = firewall_attrs.get('node_type', 'firewall')
                 if firewall in ('exclude_flows', 'include_flows'):
                     continue
                 for subnet in subnets:
