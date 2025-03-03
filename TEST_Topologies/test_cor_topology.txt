@@ -1,4 +1,5 @@
 flowchart LR
+ZONE2 <--> FW1
 ZONE1 <--> FW1
 TRANSIT_FW <--> FW1
 TRANSIT_FW <--> FW2

@@ -33,3 +33,13 @@ TRANSIT_FW:
     - 10.0.1.0/24
     - 10.0.2.0/24
   node_type: router
+ZONE1:
+  subnets:
+    - 10.1.3.0/24
+    - 10.1.4.0/24
+  node_type: zone
+ZONE2:
+  subnets:
+    - 10.1.5.0/24
+    - 10.1.6.0/24
+  node_type: zone

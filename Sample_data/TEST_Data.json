@@ -29,6 +29,12 @@
             "Prod Servers FW1_FW2\n10.1.1.10 Server 1\n10.1.1.20 Server 2\n10.2.1.10 Server 3\n10.2.1.20 Server 4",
             "HTTPS",
             "Azure / AWS Prod traffic; to Prod servers"
+        ],
+        [
+            "10.1.3.10 Server 1, 10.1.4.20 Server 2\n10.2.1.10 Server 3, 10.2.1.20 Server 4",
+            "DB Servers\n10.4.1.10\n10.4.1.20",
+            "Mysql",
+            "SQL Traffic"
         ]
     ]
 }
