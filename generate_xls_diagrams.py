@@ -19,6 +19,8 @@ import ip_headings
 import convert_flow_charts
 import filter_include_flows
 import filter_excluded_flows
+import helpers
+
 
 def create_subdirectories(base_dir):
     subdirectories = [
@@ -263,6 +265,8 @@ def generate_output(cust_rules, config_mgr, file_prefix=None):
         # This will result in separate rules that are grouped together on the same diagram having different
         # source and destination objects
         for path, path_rules in rules_diagrams.items():
+            path_rules_topology = helpers.get_topology(path_rules)
+            node_type_map = topology_node_types.get(path_rules_topology, None)
             diagram_image_file_name = join(config_mgr.get_output_directory(cust), "diagram_images", "_".join(path))
             diagram_src_file_name = join(config_mgr.get_output_directory(cust), "diagram_source_files", "_".join(path))
             diagram_file = generate_detailed_diagram.create_graphviz_diagram(
@@ -271,6 +275,7 @@ def generate_output(cust_rules, config_mgr, file_prefix=None):
                 src_filename=diagram_src_file_name,
                 node_comments=diagram_node_comments,
                 max_ips_display=diagram_max_ips,
+                node_type_map=node_type_map
             )
             if diagram_file:
                 diagram_files.append(join(config_mgr.get_output_directory(cust), diagram_file))

@@ -30,7 +30,12 @@ def format_ip_list(ip_list, max_display):
         displayed_ips = ip_list[:max_display-1] + ['...', ip_list[-1]]
         return '\n'.join(displayed_ips)
 
-def create_graphviz_diagram(flow, ip_tuples, image_filename, src_filename, node_comments, max_ips_display):
+def create_graphviz_diagram(flow, ip_tuples,
+                            image_filename,
+                            src_filename,
+                            node_comments,
+                            max_ips_display,
+                            node_type_map):
     dot = Digraph(comment='Network Flow Diagram')
     dot.attr(rankdir='LR')  # Left to Right layout
     dot.attr(bgcolor='#F0F8FF')  # Light blue background
@@ -47,10 +52,19 @@ def create_graphviz_diagram(flow, ip_tuples, image_filename, src_filename, node_
         ('#F0FFFF', '#00CED1'),  # Azure, Dark turquoise
         ('#FAF0E6', '#D2691E')   # Linen, Chocolate
     ]
+    node_type_shape_map = {
+        'firewall': 'box',
+        'router': 'diamond',
+        'zone': 'ellipse',
+        'server': 'oval'
+    }
+    nodes_shape_map = {
+        k: node_type_shape_map.get(v, 'box') for k, v in node_type_map.items()
+    }
 
     # Add nodes (firewalls)
     for fw in flow:
-        dot.node(fw, fw, shape='box', style='filled', fillcolor='#FF9933', color='#994C00')  # Orange firewalls
+        dot.node(fw, fw, shape=nodes_shape_map.get(fw, 'box'), style='filled', fillcolor='#FF9933', color='#994C00')  # Orange firewalls
 
     # Connect firewalls
     for i in range(len(flow) - 1):
