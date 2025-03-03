@@ -116,6 +116,7 @@ def generate_output(cust_rules, config_mgr, file_prefix=None):
 
     topology_inc_flows = {}
     topology_exc_flows = {}
+    topology_node_types = {}
     # Iterate through all subsections for the customer
     for subsection in config_mgr.get_customer_subsections(cust):
         topology_dict = config_mgr.get_topology(cust, subsection)
@@ -133,6 +134,7 @@ def generate_output(cust_rules, config_mgr, file_prefix=None):
 
         # Create the subnet firewall mapper
         mapper = SubnetFirewallMapper(fw_subnets_file, routes_file) if fw_subnets_file else None
+        topology_node_types[subsection] = mapper.node_types
 
         with open(fw_subnets_file, 'r') as f:
             yaml_data = yaml.safe_load(f)
@@ -250,7 +252,10 @@ def generate_output(cust_rules, config_mgr, file_prefix=None):
                 dst_str = format_ips_headings(dst_headings_ip)
 
             paths_str = '\n'.join(paths_list)
-            rows_to_output.append((src_str, dst_str, port, comment, new_rule_id, paths_str, install_on))
+            if topology_node_types[topology_name].get(install_on, 'firewall') == 'firewall':
+                rows_to_output.append((src_str, dst_str, port, comment, new_rule_id, paths_str, install_on))
+            else:
+                print("Skipping",(src_str, dst_str, port, comment, new_rule_id, paths_str, install_on))
 
     diagram_files = []
     if detailed_diagrams:
