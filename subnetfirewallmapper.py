@@ -43,7 +43,8 @@ class SubnetFirewallMapper:
         route_data = self._parse_route_dump()
 
         if yaml_data:
-            for firewall, subnets in yaml_data.items():
+            for firewall, firewall_attrs in yaml_data.items():
+                subnets = firewall_attrs.get('subnets', [])
                 if firewall in ('exclude_flows', 'include_flows'):
                     continue
                 for subnet in subnets:

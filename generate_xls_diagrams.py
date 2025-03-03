@@ -339,7 +339,7 @@ def generate_output(cust_rules, config_mgr, file_prefix=None):
 
 if __name__ == "__main__":
     config_mgr = ConfigManager('config.ini')
-    TEST_DATA = r"Sample_data/filter_flows.json"
+    TEST_DATA = r"Sample_data/TEST_Data.json"
 
     with open(TEST_DATA, 'r') as file:
         cust_rules = json.load(file)
