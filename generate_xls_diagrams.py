@@ -13,6 +13,7 @@ from data_transform_funcs import *
 from write_excel_from_tmpl import *
 import generate_diagram
 import generate_detailed_diagram
+import generate_flow_diagrams
 from combine_diagrams import combine_tuple_fields
 import os
 import ip_headings
@@ -269,13 +270,14 @@ def generate_output(cust_rules, config_mgr, file_prefix=None):
             node_type_map = topology_node_types.get(path_rules_topology, None)
             diagram_image_file_name = join(config_mgr.get_output_directory(cust), "diagram_images", "_".join(path))
             diagram_src_file_name = join(config_mgr.get_output_directory(cust), "diagram_source_files", "_".join(path))
-            diagram_file = generate_detailed_diagram.create_graphviz_diagram(
-                path, path_rules,
+            diagram_file = generate_flow_diagrams.create_network_diagram(
+                flow=path,
+                ip_data=path_rules,  # List of (src_ips, dst_ips, comments) tuples
                 image_filename=diagram_image_file_name,
                 src_filename=diagram_src_file_name,
                 node_comments=diagram_node_comments,
                 max_ips_display=diagram_max_ips,
-                node_type_map=node_type_map
+                node_type_map=node_type_map  # Optional
             )
             if diagram_file:
                 diagram_files.append(join(config_mgr.get_output_directory(cust), diagram_file))
