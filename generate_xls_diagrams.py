@@ -15,7 +15,8 @@ import diagram_renderer
 import group_rules
 import data_transform_funcs
 import write_excel_from_tmpl
-import generate_flow_diagrams
+import generate_diagrams_graphviz as generate_diagrams
+import generate_diagrams_matplot
 import ip_headings
 import filter_include_flows
 import filter_excluded_flows
@@ -288,7 +289,7 @@ def generate_output(cust_rules, config_mgr, file_prefix=None):
         if detailed_diagrams:
             diagram_params["max_ips_display"] = diagram_max_ips
 
-        diagram_file = generate_flow_diagrams.create_network_diagram(**diagram_params)
+        diagram_file = generate_diagrams.create_network_diagram(**diagram_params)
 
         if diagram_file:
             diagram_files.append(join(config_mgr.get_output_directory(cust), diagram_file))
@@ -300,7 +301,7 @@ def generate_output(cust_rules, config_mgr, file_prefix=None):
         diag_file_1_src = join(config_mgr.get_output_directory(cust), "diagram_source_files", f"{cust}_{topology}_1.txt")
         diag_file_1_image = join(config_mgr.get_output_directory(cust), "diagram_images", f"{cust}_{topology}_1.png")
         with open(diag_file_1_src, 'w') as f:
-            f.write(generate_flow_diagrams.convert_mermaid_to_dot(diagram.diagram_text,
+            f.write(generate_diagrams.convert_mermaid_to_dot(diagram.diagram_text,
                                                                   title=f"{cust} {topology} Topology",
                                                                   node_type_map=node_type_map,
                                                                   node_name_map=node_name_map)
