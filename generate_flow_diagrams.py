@@ -2,6 +2,13 @@ from graphviz import Digraph
 from collections import defaultdict
 import group_diagram_comments
 
+# Set up node type shapes
+NODE_STYLE_MAP = {
+    'firewall': 'box',
+    'router': 'diamond',
+    'zone': 'ellipse',
+    'server': 'oval'
+}
 
 def format_ip_list(ip_list, max_display):
     """
@@ -119,17 +126,9 @@ def create_network_diagram(
     else:
         raise ValueError("diagram_type must be either 'multi' or 'single'")
 
-    # Set up node type shapes
-    default_node_type_shape_map = {
-        'firewall': 'box',
-        'router': 'diamond',
-        'zone': 'ellipse',
-        'server': 'oval'
-    }
-
     if node_type_map:
         nodes_shape_map = {
-            k: default_node_type_shape_map.get(v, 'box') for k, v in node_type_map.items()
+            k: NODE_STYLE_MAP.get(v, 'box') for k, v in node_type_map.items()
         }
     else:
         nodes_shape_map = {}
@@ -233,13 +232,6 @@ def convert_mermaid_to_dot(mermaid_input, title=None, node_type_map=None):
     Returns:
         str: Converted flowchart in DOT format
     """
-    # Define node type shapes (same as in create_network_diagram)
-    default_node_type_shape_map = {
-        'firewall': 'box',
-        'router': 'diamond',
-        'zone': 'ellipse',
-        'server': 'oval'
-    }
 
     # Split input into lines and remove empty lines
     lines = [line.strip() for line in mermaid_input.split('\n') if line.strip()]
@@ -288,7 +280,7 @@ def convert_mermaid_to_dot(mermaid_input, title=None, node_type_map=None):
         # Apply node type mapping if available
         if node_type_map and node in node_type_map:
             node_type = node_type_map[node]
-            node_shape = default_node_type_shape_map.get(node_type, 'box')
+            node_shape = NODE_STYLE_MAP.get(node_type, 'box')
 
         dot_output.append(
             f'    {node_formatted} [label="{node}", shape={node_shape}, style=filled, fillcolor="{node_fillcolor}", color="{node_color}"];')
