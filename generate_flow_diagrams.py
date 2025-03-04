@@ -10,6 +10,25 @@ NODE_STYLE_MAP = {
     'server': 'oval'
 }
 
+# Define node style map
+NODE_STYLE_MAP = {
+    'firewall': 'box',
+    'router': 'diamond',
+    'zone': 'ellipse',
+    'server': 'oval'
+}
+
+# Define color pairs for different node types
+NODE_COLOR_MAP = {
+    'firewall': ('#FF9933', '#994C00'),  # Orange fill, Dark orange border
+    'router': ('#66B3FF', '#004080'),  # Light blue, Dark blue
+    'zone': ('#90EE90', '#228B22'),  # Light green, Forest green
+    'server': ('#FFDAB9', '#CD853F')  # Peach puff, Peru
+}
+
+# Default color for nodes without a specific type
+DEFAULT_COLORS = ('#FF9933', '#994C00')  # Orange fill, Dark orange border
+
 def format_ip_list(ip_list, max_display):
     """
     Format the IP list based on max_display parameter.
@@ -243,6 +262,7 @@ def convert_mermaid_to_dot(mermaid_input, title=None, node_type_map=None, node_n
         mermaid_input (str): Input string in Mermaid flowchart format
         title (str, optional): Title to be displayed on the graph. Defaults to None.
         node_type_map (dict, optional): Mapping of node names to their types for shape determination
+        node_name_map (dict, optional): Mapping of node IDs to display names
 
     Returns:
         str: Converted flowchart in DOT format
@@ -271,6 +291,7 @@ def convert_mermaid_to_dot(mermaid_input, title=None, node_type_map=None, node_n
 
             connections.append((node1, node2))
 
+
     # Build DOT format output
     dot_output = ['digraph network_diagram {', '    rankdir=LR;  // Left to right layout',
                   '    bgcolor="#F0F8FF";  // Light blue background']
@@ -289,16 +310,38 @@ def convert_mermaid_to_dot(mermaid_input, title=None, node_type_map=None, node_n
 
         # Default values
         node_shape = 'box'
-        node_fillcolor = '#FF9933'  # Orange - default color
-        node_color = '#994C00'  # Dark orange border - default
+        node_type_caption = ""
+        node_name_caption = None
+        fillcolor, color = DEFAULT_COLORS
 
         # Apply node type mapping if available
         if node_type_map and node in node_type_map:
             node_type = node_type_map[node]
             node_shape = NODE_STYLE_MAP.get(node_type, 'box')
+            node_type_caption = node_type.capitalize()
+            fillcolor, color = NODE_COLOR_MAP.get(node_type, DEFAULT_COLORS)
+
+        # Get node name if available
+        if node_name_map and node in node_name_map:
+            node_name_caption = node_name_map.get(node)
+
+        # Prepare the caption using the same logic as in create_network_diagram
+        if node_name_caption:
+            # Use node_name_caption as primary name
+            if node_type_caption:
+                node_caption = f"{node_name_caption}\\n({node_type_caption})"
+            else:
+                node_caption = node_name_caption
+        else:
+            # Fall back to node if no node_name_caption is available
+            if node_type_caption:
+                node_caption = f"{node}\\n({node_type_caption})"
+            else:
+                node_caption = node
 
         dot_output.append(
-            f'    {node_formatted} [label="{node}", shape={node_shape}, style=filled, fillcolor="{node_fillcolor}", color="{node_color}"];')
+            f'    {node_formatted} [label="{node_caption}", shape={node_shape}, style=filled, '
+            f'fillcolor="{fillcolor}", color="{color}"];')
 
     # Add connections
     dot_output.append('    // Define bidirectional connections')
