@@ -70,9 +70,9 @@ def create_network_diagram(
         "multi" for multiple source/destination IP groups
         "single" for a single source/destination group
     node_comments : bool, optional
-        Whether to display comments on nodes and as diagram title/label.
-        For single diagrams: controls whether comments appear as diagram title/label
-        For multi diagrams: controls whether comments appear on nodes
+        Controls comment display differently based on diagram_type:
+        - For single diagrams: controls whether comments appear as diagram title/label (never inside nodes)
+        - For multi diagrams: controls whether comments appear inside the nodes
     max_ips_display : int, optional
         Maximum number of IPs to display for each node
     node_type_map : dict, optional
@@ -179,8 +179,8 @@ def create_network_diagram(
         else:
             dst_label = str(dst_ip)
 
-        # Add any node comments if enabled
-        if node_comments and comments:
+        # Add node comments if enabled (but only for multi diagrams)
+        if node_comments and comments and diagram_type == "multi":
             if isinstance(comments, list):
                 comments_text = group_diagram_comments.group_data(comments)
             else:
