@@ -136,7 +136,12 @@ def create_network_diagram(
 
     # Add flow nodes (firewalls, routers, etc.)
     for fw in flow:
-        dot.node(fw, fw,
+        caption = node_type_map.get(fw, "").capitalize()
+        if caption:
+            caption = f"{fw}\n({caption})"
+        else:
+            caption = fw
+        dot.node(fw, caption,
                  shape=nodes_shape_map.get(fw, 'box'),
                  style='filled',
                  fillcolor='#FF9933',

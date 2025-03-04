@@ -32,6 +32,7 @@ def get_topology_single(result_list):
     else:
         return None
 
+
 def get_diagram_data(rules_diagrams, detailed_diagrams, combine_func):
     """Helper function to prepare data for diagram generation based on detailed_diagrams flag."""
     if detailed_diagrams:
