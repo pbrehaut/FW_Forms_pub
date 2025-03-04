@@ -11,8 +11,6 @@ from configmanager import ConfigManager
 import group_rules
 from data_transform_funcs import *
 from write_excel_from_tmpl import *
-import generate_diagram
-import generate_detailed_diagram
 import generate_flow_diagrams
 from combine_diagrams import combine_tuple_fields
 import os
