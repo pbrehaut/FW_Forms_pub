@@ -299,7 +299,7 @@ def generate_output(cust_rules, config_mgr, file_prefix=None):
                 src_filename=diagram_src_file_name,
                 node_type_map=node_type_map,
                 diagram_type="single",
-                diagram_comments=path_rules[2]
+                node_comments=diagram_node_comments,
             )
             if diagram_file:
                 diagram_files.append(join(config_mgr.get_output_directory(cust), diagram_file))

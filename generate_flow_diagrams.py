@@ -48,10 +48,9 @@ def create_network_diagram(
         image_filename,
         src_filename,
         diagram_type="multi",  # Options: "multi", "single"
-        node_comments=False,
+        node_comments=False,  # Controls comment display for both diagram types
         max_ips_display=5,
-        node_type_map=None,
-        diagram_comments=''
+        node_type_map=None
 ):
     """
     Unified function to create network flow diagrams.
@@ -71,13 +70,13 @@ def create_network_diagram(
         "multi" for multiple source/destination IP groups
         "single" for a single source/destination group
     node_comments : bool, optional
-        Whether to display comments on nodes
+        Whether to display comments on nodes and as diagram title/label.
+        For single diagrams: controls whether comments appear as diagram title/label
+        For multi diagrams: controls whether comments appear on nodes
     max_ips_display : int, optional
         Maximum number of IPs to display for each node
     node_type_map : dict, optional
         Mapping of node names to their types for shape determination
-    diagram_comments : list, optional
-        List of additional comments for the diagram (only used in single mode)
 
     Returns:
     --------
@@ -91,14 +90,21 @@ def create_network_diagram(
 
     # Handle different diagram types
     if diagram_type == "single":
-        comments_str = '\n// '.join(diagram_comments)
-        label_str = group_diagram_comments.group_data(diagram_comments)
-        dot.attr(comment=comments_str)
-        dot.attr(label=label_str, labelloc='t', fontsize='12')
-
         # Convert single tuple to expected format
         if isinstance(ip_data, tuple) and len(ip_data) == 3:
             src_ips, dst_ips, comments = ip_data
+
+            # Add diagram title/label if comments are provided and enabled
+            if comments and node_comments:
+                if isinstance(comments, list):
+                    comments_str = '\n// '.join(comments)
+                    label_str = group_diagram_comments.group_data(comments)
+                else:
+                    comments_str = str(comments)
+                    label_str = str(comments)
+                dot.attr(comment=comments_str)
+                dot.attr(label=label_str, labelloc='t', fontsize='12')
+
             ip_tuples = [([ip for ip in src_ips], [ip for ip in dst_ips], comments)]
         else:
             raise ValueError("For 'single' diagram_type, ip_data must be a tuple of (src_ips, dst_ips, comments)")
