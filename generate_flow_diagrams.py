@@ -104,6 +104,8 @@ def create_network_diagram(
         Maximum number of IPs to display for each node
     node_type_map : dict, optional
         Mapping of node names to their types for shape determination
+    node_name_map : dict, optional
+        Mapping of node IDs to display names
 
     Returns:
     --------
@@ -114,6 +116,9 @@ def create_network_diagram(
     dot = Digraph(comment='Network Flow Diagram')
     dot.attr(rankdir='LR')  # Left to Right layout
     dot.attr(bgcolor='#F0F8FF')  # Light blue background
+
+    # Default color for nodes without a specific type
+    DEFAULT_COLORS = ('#FF9933', '#994C00')  # Orange fill, Dark orange border
 
     # Handle different diagram types
     if diagram_type == "single":
@@ -146,20 +151,21 @@ def create_network_diagram(
     else:
         raise ValueError("diagram_type must be either 'multi' or 'single'")
 
-    if node_type_map:
-        nodes_shape_map = {
-            k: NODE_STYLE_MAP.get(v, 'box') for k, v in node_type_map.items()
-        }
-    else:
-        nodes_shape_map = {}
-
     # Add flow nodes (firewalls, routers, etc.)
     for fw in flow:
-        node_type_caption = node_type_map.get(fw, "").capitalize()
+        node_type_caption = ""
+        node_shape = 'box'
+        fillcolor, color = DEFAULT_COLORS
+
+        # Apply node type mapping if available
+        if node_type_map and fw in node_type_map:
+            node_type = node_type_map[fw]
+            node_shape = NODE_STYLE_MAP.get(node_type, 'box')
+            node_type_caption = node_type.capitalize()
+            fillcolor, color = NODE_COLOR_MAP.get(node_type, DEFAULT_COLORS)
 
         # Get node name if available
-        if node_name_map:
-            node_name_caption = node_name_map.get(fw)
+        node_name_caption = node_name_map.get(fw) if node_name_map else None
 
         # Prepare the caption
         if node_name_caption:
@@ -174,11 +180,12 @@ def create_network_diagram(
                 node_caption = f"{fw}\n({node_type_caption})"
             else:
                 node_caption = fw
+
         dot.node(fw, node_caption,
-                 shape=nodes_shape_map.get(fw, 'box'),
+                 shape=node_shape,
                  style='filled',
-                 fillcolor='#FF9933',
-                 color='#994C00')  # Orange nodes
+                 fillcolor=fillcolor,
+                 color=color)
 
     # Connect flow nodes
     for i in range(len(flow) - 1):
