@@ -278,7 +278,7 @@ def generate_output(cust_rules, config_mgr, file_prefix=None):
                 node_comments=diagram_node_comments,
                 max_ips_display=diagram_max_ips,
                 diagram_type="multi",
-                node_type_map=node_type_map  # Optional
+                node_type_map=node_type_map,  # Optional
             )
             if diagram_file:
                 diagram_files.append(join(config_mgr.get_output_directory(cust), diagram_file))
