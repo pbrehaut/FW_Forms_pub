@@ -15,7 +15,6 @@ import generate_flow_diagrams
 from combine_diagrams import combine_tuple_fields
 import os
 import ip_headings
-import convert_flow_charts
 import filter_include_flows
 import filter_excluded_flows
 import helpers
@@ -290,21 +289,15 @@ def generate_output(cust_rules, config_mgr, file_prefix=None):
 
     for topology, v in topologies.items():
         diagram, *_ = v
+        node_type_map = topology_node_types.get(topology, None)
         diag_file_1_src = join(config_mgr.get_output_directory(cust), "diagram_source_files", f"{cust}_{topology}_1.txt")
         diag_file_1_image = join(config_mgr.get_output_directory(cust), "diagram_images", f"{cust}_{topology}_1.png")
         with open(diag_file_1_src, 'w') as f:
-            f.write(convert_flow_charts.convert_mermaid_to_dot(diagram.diagram_text, title=f"{cust} {topology} Topology"))
+            f.write(generate_flow_diagrams.convert_mermaid_to_dot(diagram.diagram_text,
+                                                                  title=f"{cust} {topology} Topology",
+                                                                  node_type_map=node_type_map))
         diagram_renderer.render_diagram(diag_file_1_src, diag_file_1_image)
-
-        diag_file_2_src = join(config_mgr.get_output_directory(cust), "diagram_source_files", f"{cust}_{topology}_2.txt")
-        diag_file_2_image = join(config_mgr.get_output_directory(cust), "diagram_images", f"{cust}_{topology}_2.png")
-        with open(diag_file_2_src, 'w') as f:
-            f.write(convert_flow_charts.convert_mermaid_to_dot(diagram.diagram_text, format_endnodes=True, title=f"{cust} {topology} Topology"))
-        diagram_renderer.render_diagram(diag_file_2_src, diag_file_2_image)
-
         diagram_files.insert(0, diag_file_1_image)
-
-        diagram_files.insert(0, diag_file_2_image)
 
 
     # Map the field names to index values in each row
