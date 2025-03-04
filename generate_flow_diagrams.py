@@ -57,7 +57,8 @@ def create_network_diagram(
         diagram_type="multi",  # Options: "multi", "single"
         node_comments=False,  # Controls comment display for both diagram types
         max_ips_display=5,
-        node_type_map=None
+        node_type_map=None,
+        node_name_map=None
 ):
     """
     Unified function to create network flow diagrams.
@@ -135,12 +136,26 @@ def create_network_diagram(
 
     # Add flow nodes (firewalls, routers, etc.)
     for fw in flow:
-        caption = node_type_map.get(fw, "").capitalize()
-        if caption:
-            caption = f"{fw}\n({caption})"
+        node_type_caption = node_type_map.get(fw, "").capitalize()
+
+        # Get node name if available
+        if node_name_map:
+            node_name_caption = node_name_map.get(fw)
+
+        # Prepare the caption
+        if node_name_caption:
+            # Use node_name_caption as primary name
+            if node_type_caption:
+                node_caption = f"{node_name_caption}\n({node_type_caption})"
+            else:
+                node_caption = node_name_caption
         else:
-            caption = fw
-        dot.node(fw, caption,
+            # Fall back to fw if no node_name_caption is available
+            if node_type_caption:
+                node_caption = f"{fw}\n({node_type_caption})"
+            else:
+                node_caption = fw
+        dot.node(fw, node_caption,
                  shape=nodes_shape_map.get(fw, 'box'),
                  style='filled',
                  fillcolor='#FF9933',

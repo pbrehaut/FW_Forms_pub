@@ -6,6 +6,7 @@ from typing import Dict, Optional, Union, List, Tuple
 class SubnetFirewallMapper:
     def __init__(self, yaml_file_path: str, route_dump_path: Optional[str] = None):
         self.node_types = {}
+        self.node_names = {}
         self.valid_firewalls = set()
         self.yaml_file_path = yaml_file_path
         self.route_dump_path = route_dump_path
@@ -48,6 +49,7 @@ class SubnetFirewallMapper:
             for firewall, firewall_attrs in yaml_data.items():
                 subnets = firewall_attrs.get('subnets', [])
                 self.node_types[firewall] = firewall_attrs.get('node_type', 'firewall')
+                self.node_names[firewall] = firewall_attrs.get('node_name', "")
                 if firewall in ('exclude_flows', 'include_flows'):
                     continue
                 for subnet in subnets:

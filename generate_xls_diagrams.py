@@ -119,6 +119,7 @@ def generate_output(cust_rules, config_mgr, file_prefix=None):
     topology_inc_flows = {}
     topology_exc_flows = {}
     topology_node_types = {}
+    topology_node_names = {}
     # Iterate through all subsections for the customer
     for subsection in config_mgr.get_customer_subsections(cust):
         topology_dict = config_mgr.get_topology(cust, subsection)
@@ -137,6 +138,7 @@ def generate_output(cust_rules, config_mgr, file_prefix=None):
         # Create the subnet firewall mapper
         mapper = SubnetFirewallMapper(fw_subnets_file, routes_file) if fw_subnets_file else None
         topology_node_types[subsection] = mapper.node_types
+        topology_node_names[subsection] = mapper.node_names
 
         with open(fw_subnets_file, 'r') as f:
             yaml_data = yaml.safe_load(f)
@@ -265,6 +267,7 @@ def generate_output(cust_rules, config_mgr, file_prefix=None):
     ):
         path_rules_topology = topology_func(path_rules)
         node_type_map = topology_node_types.get(path_rules_topology, None)
+        node_name_map = topology_node_names.get(path_rules_topology, None)
 
         diagram_image_file_name = join(config_mgr.get_output_directory(cust), "diagram_images", "_".join(path))
         diagram_src_file_name = join(config_mgr.get_output_directory(cust), "diagram_source_files", "_".join(path))
@@ -277,6 +280,7 @@ def generate_output(cust_rules, config_mgr, file_prefix=None):
             "src_filename": diagram_src_file_name,
             "node_comments": diagram_node_comments,
             "node_type_map": node_type_map,
+            "node_name_map": node_name_map,
             "diagram_type": diagram_type,
         }
 
