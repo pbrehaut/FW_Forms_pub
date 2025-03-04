@@ -258,7 +258,6 @@ def generate_output(cust_rules, config_mgr, file_prefix=None):
             else:
                 print("Skipping",(src_str, dst_str, port, comment, new_rule_id, paths_str, install_on))
 
-
     diagram_files = []
     for path, path_rules, topology_func, diagram_type in helpers.get_diagram_data(
             rules_diagrams, detailed_diagrams, combine_tuple_fields
