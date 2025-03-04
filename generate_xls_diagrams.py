@@ -277,6 +277,7 @@ def generate_output(cust_rules, config_mgr, file_prefix=None):
                 src_filename=diagram_src_file_name,
                 node_comments=diagram_node_comments,
                 max_ips_display=diagram_max_ips,
+                diagram_type="multi",
                 node_type_map=node_type_map  # Optional
             )
             if diagram_file:
@@ -287,12 +288,22 @@ def generate_output(cust_rules, config_mgr, file_prefix=None):
         # flow IDs will be printed at the top of the diagram in one text block to allow the user to map back the
         # flows on this diagram to the rule set
         for path, path_rules in combine_tuple_fields(rules_diagrams):
+            path_rules_topology = helpers.get_topology_single(path_rules)
+            node_type_map = topology_node_types.get(path_rules_topology, None)
             diagram_image_file_name = join(config_mgr.get_output_directory(cust), "diagram_images", "_".join(path))
             diagram_src_file_name = join(config_mgr.get_output_directory(cust), "diagram_source_files", "_".join(path))
-            diagram_file = generate_diagram.create_graphviz_diagram(
-                path, *path_rules,
+            # diagram_file = generate_diagram.create_graphviz_diagram(
+            #     path, *path_rules,
+            #     image_filename=diagram_image_file_name,
+            #     src_filename=diagram_src_file_name
+            # )
+            diagram_file = generate_flow_diagrams.create_network_diagram(
+                flow=path,
+                ip_data=path_rules,
                 image_filename=diagram_image_file_name,
-                src_filename=diagram_src_file_name
+                src_filename=diagram_src_file_name,
+                node_type_map=node_type_map,
+                diagram_type="single",
             )
             if diagram_file:
                 diagram_files.append(join(config_mgr.get_output_directory(cust), diagram_file))

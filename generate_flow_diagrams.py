@@ -51,7 +51,7 @@ def create_network_diagram(
         node_comments=False,
         max_ips_display=5,
         node_type_map=None,
-        diagram_comments=None
+        diagram_comments=''
 ):
     """
     Unified function to create network flow diagrams.
@@ -90,7 +90,7 @@ def create_network_diagram(
     dot.attr(bgcolor='#F0F8FF')  # Light blue background
 
     # Handle different diagram types
-    if diagram_type == "single" and diagram_comments:
+    if diagram_type == "single":
         comments_str = '\n// '.join(diagram_comments)
         label_str = group_diagram_comments.group_data(diagram_comments)
         dot.attr(comment=comments_str)
