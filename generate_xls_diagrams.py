@@ -3,17 +3,19 @@ from datetime import datetime
 import json
 from os.path import join
 import yaml
-import diagram_renderer
+import os
+
 from firewalldiagram import FirewallDiagram
 from subnetfirewallmapper import SubnetFirewallMapper
 from findips import find_ip_addresses
 from configmanager import ConfigManager
-import group_rules
-from data_transform_funcs import *
-from write_excel_from_tmpl import *
-import generate_flow_diagrams
 from combine_diagrams import combine_tuple_fields
-import os
+
+import diagram_renderer
+import group_rules
+import data_transform_funcs
+import write_excel_from_tmpl
+import generate_flow_diagrams
 import ip_headings
 import filter_include_flows
 import filter_excluded_flows
@@ -201,7 +203,7 @@ def generate_output(cust_rules, config_mgr, file_prefix=None):
         # this will allow regrouping based on the installed on gateway
         rule_src_dst_permutations = filter_include_flows.filter_ip_data(rule_src_dst_permutations, topology_inc_flows)
         rule_src_dst_permutations = filter_excluded_flows.filter_ip_data(rule_src_dst_permutations, topology_exc_flows)
-        rule_src_dst_permutations = transform_network_data(rule_src_dst_permutations)
+        rule_src_dst_permutations = data_transform_funcs.transform_network_data(rule_src_dst_permutations)
 
         # Group the permutations/combinations on the topology and the install on firewall
         # Subgroup by flow/path.
@@ -245,11 +247,11 @@ def generate_output(cust_rules, config_mgr, file_prefix=None):
                 dst_headings_ip[dst_headings[ip]].append(ip)
 
             if inc_flow_count:
-                src_str = format_ips(src_list)
-                dst_str = format_ips(dst_list)
+                src_str = data_transform_funcs.format_ips(src_list)
+                dst_str = data_transform_funcs.format_ips(dst_list)
             else:
-                src_str = format_ips_headings(src_headings_ip)
-                dst_str = format_ips_headings(dst_headings_ip)
+                src_str = data_transform_funcs.format_ips_headings(src_headings_ip)
+                dst_str = data_transform_funcs.format_ips_headings(dst_headings_ip)
 
             paths_str = '\n'.join(paths_list)
             if topology_node_types[topology_name].get(install_on, 'firewall') == 'firewall':
@@ -321,7 +323,7 @@ def generate_output(cust_rules, config_mgr, file_prefix=None):
         else:
             file_prefix = ""
         xlsx_file = join(config_mgr.get_output_directory(cust), "excel_fw_forms", f"FW_Req_{cust}{file_prefix}_{datetime_for_filename()}.xlsx")
-        write_to_excel(rows_to_output, excel_headers, field_mapping,
+        write_excel_from_tmpl.write_to_excel(rows_to_output, excel_headers, field_mapping,
                        filename=xlsx_file,
                        image_files=diagram_files,
                        template=config_mgr.get_template_file(cust))
