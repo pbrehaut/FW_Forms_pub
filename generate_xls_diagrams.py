@@ -260,49 +260,36 @@ def generate_output(cust_rules, config_mgr, file_prefix=None):
             else:
                 print("Skipping",(src_str, dst_str, port, comment, new_rule_id, paths_str, install_on))
 
+
     diagram_files = []
-    if detailed_diagrams:
-        # If detailed diagrams is specified each flow will have its own source and destination object on the diagram.
-        # This will result in separate rules that are grouped together on the same diagram having different
-        # source and destination objects
-        for path, path_rules in rules_diagrams.items():
-            path_rules_topology = helpers.get_topology(path_rules)
-            node_type_map = topology_node_types.get(path_rules_topology, None)
-            diagram_image_file_name = join(config_mgr.get_output_directory(cust), "diagram_images", "_".join(path))
-            diagram_src_file_name = join(config_mgr.get_output_directory(cust), "diagram_source_files", "_".join(path))
-            diagram_file = generate_flow_diagrams.create_network_diagram(
-                flow=path,
-                ip_data=path_rules,  # List of (src_ips, dst_ips, comments) tuples
-                image_filename=diagram_image_file_name,
-                src_filename=diagram_src_file_name,
-                node_comments=diagram_node_comments,
-                max_ips_display=diagram_max_ips,
-                diagram_type="multi",
-                node_type_map=node_type_map,  # Optional
-            )
-            if diagram_file:
-                diagram_files.append(join(config_mgr.get_output_directory(cust), diagram_file))
-    else:
-        # Combine all the flows together that match this path and represent them as one source and destination
-        # combination. The IP addresses for the flows will be represented by a start and end IP. The rule numbers and
-        # flow IDs will be printed at the top of the diagram in one text block to allow the user to map back the
-        # flows on this diagram to the rule set
-        for path, path_rules in combine_tuple_fields(rules_diagrams):
-            path_rules_topology = helpers.get_topology_single(path_rules)
-            node_type_map = topology_node_types.get(path_rules_topology, None)
-            diagram_image_file_name = join(config_mgr.get_output_directory(cust), "diagram_images", "_".join(path))
-            diagram_src_file_name = join(config_mgr.get_output_directory(cust), "diagram_source_files", "_".join(path))
-            diagram_file = generate_flow_diagrams.create_network_diagram(
-                flow=path,
-                ip_data=path_rules,
-                image_filename=diagram_image_file_name,
-                src_filename=diagram_src_file_name,
-                node_type_map=node_type_map,
-                diagram_type="single",
-                node_comments=diagram_node_comments,
-            )
-            if diagram_file:
-                diagram_files.append(join(config_mgr.get_output_directory(cust), diagram_file))
+    for path, path_rules, topology_func, diagram_type in helpers.get_diagram_data(
+            rules_diagrams, detailed_diagrams, combine_tuple_fields
+    ):
+        path_rules_topology = topology_func(path_rules)
+        node_type_map = topology_node_types.get(path_rules_topology, None)
+
+        diagram_image_file_name = join(config_mgr.get_output_directory(cust), "diagram_images", "_".join(path))
+        diagram_src_file_name = join(config_mgr.get_output_directory(cust), "diagram_source_files", "_".join(path))
+
+        # Common parameters for both cases
+        diagram_params = {
+            "flow": path,
+            "ip_data": path_rules,
+            "image_filename": diagram_image_file_name,
+            "src_filename": diagram_src_file_name,
+            "node_comments": diagram_node_comments,
+            "node_type_map": node_type_map,
+            "diagram_type": diagram_type,
+        }
+
+        # Add max_ips_display only for detailed_diagrams
+        if detailed_diagrams:
+            diagram_params["max_ips_display"] = diagram_max_ips
+
+        diagram_file = generate_flow_diagrams.create_network_diagram(**diagram_params)
+
+        if diagram_file:
+            diagram_files.append(join(config_mgr.get_output_directory(cust), diagram_file))
 
     for topology, v in topologies.items():
         diagram, *_ = v
