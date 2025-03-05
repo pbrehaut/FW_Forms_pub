@@ -1,5 +1,6 @@
 networkx
 graphviz
+matplotlib
 openpyxl
 PyYAML
 Pillow
