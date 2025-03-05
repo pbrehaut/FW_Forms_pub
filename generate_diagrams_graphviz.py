@@ -1,4 +1,4 @@
-from graphviz import Digraph
+from graphviz import Digraph, Source
 from collections import defaultdict
 import group_diagram_comments
 
@@ -360,3 +360,15 @@ def convert_from_mermaid(mermaid_input, title=None, node_type_map=None, node_nam
     dot_output.append('}')
 
     return '\n'.join(dot_output)
+
+
+def render_diagram(diagram_src, output_image):
+    try:
+        with open(diagram_src, 'r') as f:
+            dot_source = f.read()
+
+        graph = Source(dot_source)
+        graph.render(output_image.replace('.png', ''), format='png', cleanup=True)
+        print(f"Rendered: {output_image}")
+    except Exception as e:
+        print(f"Error rendering {diagram_src}: {str(e)}")

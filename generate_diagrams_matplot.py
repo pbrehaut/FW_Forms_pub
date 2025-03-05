@@ -441,7 +441,7 @@ def convert_from_mermaid(mermaid_input, title=None, node_type_map=None, node_nam
     return G
 
 
-def draw_networkx_diagram(G, output_filename):
+def render_diagram(G, output_filename):
     """
     Draw a NetworkX graph as a network diagram using Matplotlib
 
@@ -495,7 +495,7 @@ def draw_networkx_diagram(G, output_filename):
 
     # Adjust layout and save
     plt.tight_layout()
-    plt.savefig(f"{output_filename}.png", dpi=300, bbox_inches='tight')
+    plt.savefig(f"{output_filename}", dpi=300, bbox_inches='tight')
 
     plt.close()
     return f"{output_filename}.png"
