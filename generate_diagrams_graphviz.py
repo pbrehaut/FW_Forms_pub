@@ -261,7 +261,7 @@ def create_network_diagram(
     return diagram_file
 
 
-def convert_mermaid_to_dot(mermaid_input, title=None, node_type_map=None, node_name_map=None):
+def convert_from_mermaid(mermaid_input, title=None, node_type_map=None, node_name_map=None):
     """
     Convert Mermaid flowchart syntax to DOT format for Graphviz
 

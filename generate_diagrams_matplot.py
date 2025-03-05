@@ -378,7 +378,7 @@ def create_network_diagram(
         return None
 
 
-def convert_mermaid_to_networkx(mermaid_input, title=None, node_type_map=None, node_name_map=None):
+def convert_from_mermaid(mermaid_input, title=None, node_type_map=None, node_name_map=None):
     """
     Convert Mermaid flowchart syntax to NetworkX graph
 

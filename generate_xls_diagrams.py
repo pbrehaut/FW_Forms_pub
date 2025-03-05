@@ -16,7 +16,7 @@ import group_rules
 import data_transform_funcs
 import write_excel_from_tmpl
 import generate_diagrams_graphviz as generate_diagrams
-import generate_diagrams_matplot
+# import generate_diagrams_matplot as generate_diagrams
 import ip_headings
 import filter_include_flows
 import filter_excluded_flows
@@ -301,7 +301,7 @@ def generate_output(cust_rules, config_mgr, file_prefix=None):
         diag_file_1_src = join(config_mgr.get_output_directory(cust), "diagram_source_files", f"{cust}_{topology}_1.txt")
         diag_file_1_image = join(config_mgr.get_output_directory(cust), "diagram_images", f"{cust}_{topology}_1.png")
         with open(diag_file_1_src, 'w') as f:
-            f.write(generate_diagrams.convert_mermaid_to_dot(diagram.diagram_text,
+            f.write(generate_diagrams.convert_from_mermaid(diagram.diagram_text,
                                                                   title=f"{cust} {topology} Topology",
                                                                   node_type_map=node_type_map,
                                                                   node_name_map=node_name_map)
