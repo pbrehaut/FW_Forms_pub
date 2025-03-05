@@ -300,14 +300,17 @@ def generate_output(cust_rules, config_mgr, file_prefix=None):
         node_name_map = topology_node_names.get(topology, None)
         diag_file_1_src = join(config_mgr.get_output_directory(cust), "diagram_source_files", f"{cust}_{topology}_1.txt")
         diag_file_1_image = join(config_mgr.get_output_directory(cust), "diagram_images", f"{cust}_{topology}_1.png")
-        with open(diag_file_1_src, 'w') as f:
-            f.write(generate_diagrams.convert_from_mermaid(diagram.diagram_text,
+
+        mermaid_converted = generate_diagrams.convert_from_mermaid(diagram.diagram_text,
                                                                   title=f"{cust} {topology} Topology",
                                                                   node_type_map=node_type_map,
                                                                   node_name_map=node_name_map)
-                    )
-        diagram_renderer.render_diagram(diag_file_1_src, diag_file_1_image)
-        diagram_files.insert(0, diag_file_1_image)
+        if type(mermaid_converted) == str:
+            with open(diag_file_1_src, 'w') as f:
+                f.write(mermaid_converted)
+            diagram_files.insert(0, diag_file_1_image)
+            diagram_renderer.render_diagram(diag_file_1_src, diag_file_1_image)
+            diagram_files.insert(0, diag_file_1_image)
 
 
     # Map the field names to index values in each row
