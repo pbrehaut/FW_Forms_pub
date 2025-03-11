@@ -118,8 +118,8 @@ def generate_output(cust_rules, config_mgr, file_prefix=None):
 
     topology_inc_flows = {}
     topology_exc_flows = {}
-    topology_node_types = {}
-    topology_node_names = {}
+    # topology_node_types = {}
+    # topology_node_names = {}
     # Iterate through all subsections for the customer
     for subsection in config_mgr.get_customer_subsections(cust):
         topology_dict = config_mgr.get_topology(cust, subsection)
@@ -137,8 +137,8 @@ def generate_output(cust_rules, config_mgr, file_prefix=None):
 
         # Create the subnet firewall mapper
         mapper = SubnetFirewallMapper(fw_subnets_file, routes_file) if fw_subnets_file else None
-        topology_node_types[subsection] = mapper.node_types
-        topology_node_names[subsection] = mapper.node_names
+        # topology_node_types[subsection] = mapper.node_types
+        # topology_node_names[subsection] = mapper.node_names
 
         with open(fw_subnets_file, 'r') as f:
             yaml_data = yaml.safe_load(f)
@@ -256,7 +256,7 @@ def generate_output(cust_rules, config_mgr, file_prefix=None):
                 dst_str = data_transform_funcs.format_ips_headings(dst_headings_ip)
 
             paths_str = '\n'.join(paths_list)
-            if topology_node_types[topology_name].get(install_on, 'firewall') == 'firewall':
+            if topologies[topology][1].get_node_type(install_on) == 'firewall':
                 rows_to_output.append((src_str, dst_str, port, comment, new_rule_id, paths_str, install_on))
             else:
                 print("Skipping",(src_str, dst_str, port, comment, new_rule_id, paths_str, install_on))
@@ -266,8 +266,8 @@ def generate_output(cust_rules, config_mgr, file_prefix=None):
             rules_diagrams, detailed_diagrams, combine_tuple_fields
     ):
         path_rules_topology = topology_func(path_rules)
-        node_type_map = topology_node_types.get(path_rules_topology, None)
-        node_name_map = topology_node_names.get(path_rules_topology, None)
+        # node_type_map = topology_node_types.get(path_rules_topology, None)
+        # node_name_map = topology_node_names.get(path_rules_topology, None)
 
         diagram_image_file_name = join(config_mgr.get_output_directory(cust), "diagram_images", "_".join(path))
         diagram_src_file_name = join(config_mgr.get_output_directory(cust), "diagram_source_files", "_".join(path))
@@ -279,8 +279,7 @@ def generate_output(cust_rules, config_mgr, file_prefix=None):
             "image_filename": diagram_image_file_name,
             "src_filename": diagram_src_file_name,
             "node_comments": diagram_node_comments,
-            "node_type_map": node_type_map,
-            "node_name_map": node_name_map,
+            "node_map": topologies[path_rules_topology][1],
             "diagram_type": diagram_type,
         }
 
@@ -295,15 +294,15 @@ def generate_output(cust_rules, config_mgr, file_prefix=None):
 
     for topology, v in topologies.items():
         diagram, *_ = v
-        node_type_map = topology_node_types.get(topology, None)
-        node_name_map = topology_node_names.get(topology, None)
+        # node_type_map = topology_node_types.get(topology, None)
+        # node_name_map = topology_node_names.get(topology, None)
         diag_file_1_src = join(config_mgr.get_output_directory(cust), "diagram_source_files", f"{cust}_{topology}_1.txt")
         diag_file_1_image = join(config_mgr.get_output_directory(cust), "diagram_images", f"{cust}_{topology}_1.png")
 
         mermaid_converted = generate_diagrams.convert_from_mermaid(diagram.diagram_text,
                                                                   title=f"{cust} {topology} Topology",
-                                                                  node_type_map=node_type_map,
-                                                                  node_name_map=node_name_map)
+                                                                  node_map=topologies[topology][1],
+                                                                  )
         if type(mermaid_converted) == str:
             with open(diag_file_1_src, 'w') as f:
                 f.write(mermaid_converted)
