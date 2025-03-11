@@ -14,8 +14,8 @@ from combine_diagrams import combine_tuple_fields
 import group_rules
 import data_transform_funcs
 import write_excel_from_tmpl
-# import generate_diagrams_graphviz as generate_diagrams
-import generate_diagrams_matplot as generate_diagrams
+import generate_diagrams_graphviz as generate_diagrams
+#import generate_diagrams_matplot as generate_diagrams
 import ip_headings
 import filter_include_flows
 import filter_excluded_flows
