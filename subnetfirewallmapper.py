@@ -78,3 +78,91 @@ class SubnetFirewallMapper:
 
         # Return the firewall associated with the most specific match
         return matches[0][1]
+
+    def get_subnets_for_node(self, node_name: str) -> List[ipaddress.IPv4Network]:
+        """
+        Get all subnets associated with a specific node/firewall.
+
+        Args:
+            node_name (str): The name of the node/firewall to look up
+
+        Returns:
+            List[ipaddress.IPv4Network]: List of subnets associated with the node
+        """
+        if node_name not in self.valid_firewalls:
+            return []
+
+        return [subnet for subnet, firewall in self.subnet_firewall_map.items()
+                if firewall == node_name]
+
+    def get_node_name(self, node_id: str) -> str:
+        """
+        Get the node name for a given firewall/node ID.
+
+        Args:
+            node_id (str): The ID of the node to look up
+
+        Returns:
+            str: The name of the node, or empty string if not found
+        """
+        return self.node_names.get(node_id, "")
+
+    def get_node_type(self, node_id: str) -> str:
+        """
+        Get the node type for a given firewall/node ID.
+
+        Args:
+            node_id (str): The ID of the node to look up
+
+        Returns:
+            str: The type of the node (e.g., 'firewall', 'router', 'server', 'zone'),
+                 or empty string if not found
+        """
+        return self.node_types.get(node_id, "")
+
+    def is_ip_on_node(self, node_name: str, ip_address: str) -> bool:
+        """
+        Check if an IP address or subnet exists on a specific node.
+
+        Args:
+            node_name (str): The name of the node/firewall to check
+            ip_address (str): An IP address (treated as /32 if no mask) or subnet
+
+        Returns:
+            bool: True if the IP exists on the node, False otherwise
+        """
+        # Check if node exists
+        if node_name not in self.valid_firewalls:
+            return False
+
+        # Get all subnets for this node
+        node_subnets = self.get_subnets_for_node(node_name)
+
+        # Process the input IP address
+        try:
+            # Try to parse as a subnet first
+            ip_obj = ipaddress.ip_network(ip_address, strict=False)
+        except ValueError:
+            try:
+                # If that fails, try to parse as an IP address (with implicit /32)
+                ip_obj = ipaddress.ip_network(f"{ip_address}/32", strict=False)
+            except ValueError:
+                # Invalid IP format
+                return False
+
+        # Check if the IP/subnet is contained in any of the node's subnets
+        for subnet in node_subnets:
+            # If IP is a single address
+            if ip_obj.prefixlen == 32:
+                if ip_obj.network_address in subnet:
+                    return True
+            # If IP is a subnet
+            else:
+                # Check if our subnet is a subset of node subnet or equal
+                if ip_obj.subnet_of(subnet) or ip_obj == subnet:
+                    return True
+                # Check if node subnet is a subset of our subnet
+                elif subnet.subnet_of(ip_obj):
+                    return True
+
+        return False
