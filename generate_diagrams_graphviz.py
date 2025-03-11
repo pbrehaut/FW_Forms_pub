@@ -4,22 +4,24 @@ import group_diagram_comments
 import ipaddress
 
 # Set up node type shapes
+end_node_types = ['server', 'end node', 'load balancer', 'f5']
 NODE_STYLE_MAP = {
     'firewall': 'box',
     'router': 'diamond',
     'zone': 'ellipse',
-    'server': 'oval',
-    'end node': 'oval'  # Added "end node" type
 }
+
+for node_type in end_node_types:
+    NODE_STYLE_MAP[node_type] = 'box'
 
 # Define color pairs for different node types
 NODE_COLOR_MAP = {
     'firewall': ('#FF9933', '#994C00'),  # Orange fill, Dark orange border
     'router': ('#66B3FF', '#004080'),  # Light blue, Dark blue
     'zone': ('#90EE90', '#228B22'),  # Light green, Forest green
-    'server': ('#FFDAB9', '#CD853F'),  # Peach puff, Peru
-    'end node': ('#FFDAB9', '#CD853F')  # Same as server for consistency
 }
+for node_type in end_node_types:
+    NODE_COLOR_MAP[node_type] = ('#FFDAB9', '#CD853F')  # Peach puff, Peru
 
 # Default color for nodes without a specific type
 DEFAULT_COLORS = ('#FF9933', '#994C00')  # Orange fill, Dark orange border
@@ -124,8 +126,6 @@ def create_network_diagram(
         first_node_type = node_map.get_node_type(first_node)
         last_node_type = node_map.get_node_type(last_node)
 
-        end_node_types = ['server', 'end node', 'load balancer', 'f5']
-
         src_is_end_node = first_node_type in end_node_types
         dst_is_end_node = last_node_type in end_node_types
 
@@ -185,12 +185,12 @@ def create_network_diagram(
         # Add IP information to the caption for end nodes
         if fw == first_node and src_is_end_node:
             for idx, (src_label, _, _) in enumerate(ip_labels.values()):
-                node_caption += f"\nSource IP: {src_label}"
+                node_caption += f"\nSource IP(s):\n{src_label}"
                 break  # Just add the first one to avoid clutter
 
         if fw == last_node and dst_is_end_node:
             for idx, (_, dst_label, _) in enumerate(ip_labels.values()):
-                node_caption += f"\nDestination IP: {dst_label}"
+                node_caption += f"\nDestination IP(s):\n{dst_label}"
                 break  # Just add the first one to avoid clutter
 
         dot.node(fw, node_caption,
