@@ -10,14 +10,6 @@ NODE_STYLE_MAP = {
     'server': 'oval'
 }
 
-# Define node style map
-NODE_STYLE_MAP = {
-    'firewall': 'box',
-    'router': 'diamond',
-    'zone': 'ellipse',
-    'server': 'oval'
-}
-
 # Define color pairs for different node types
 NODE_COLOR_MAP = {
     'firewall': ('#FF9933', '#994C00'),  # Orange fill, Dark orange border
@@ -76,8 +68,7 @@ def create_network_diagram(
         diagram_type="multi",  # Options: "multi", "single"
         node_comments=False,  # Controls comment display for both diagram types
         max_ips_display=5,
-        node_type_map=None,
-        node_name_map=None
+        node_map=None  # Changed parameter to use SubnetFirewallMapper instance
 ):
     """
     Unified function to create network flow diagrams.
@@ -102,10 +93,8 @@ def create_network_diagram(
         - For multi diagrams: controls whether comments appear inside the nodes
     max_ips_display : int, optional
         Maximum number of IPs to display for each node
-    node_type_map : dict, optional
-        Mapping of node names to their types for shape determination
-    node_name_map : dict, optional
-        Mapping of node IDs to display names
+    node_map : SubnetFirewallMapper, optional
+        Instance of SubnetFirewallMapper with node information
 
     Returns:
     --------
@@ -157,15 +146,16 @@ def create_network_diagram(
         node_shape = 'box'
         fillcolor, color = DEFAULT_COLORS
 
-        # Apply node type mapping if available
-        if node_type_map and fw in node_type_map:
-            node_type = node_type_map[fw]
-            node_shape = NODE_STYLE_MAP.get(node_type, 'box')
-            node_type_caption = node_type.capitalize()
-            fillcolor, color = NODE_COLOR_MAP.get(node_type, DEFAULT_COLORS)
+        # Apply node type mapping if available using node_map methods
+        if node_map:
+            node_type = node_map.get_node_type(fw)
+            if node_type:
+                node_shape = NODE_STYLE_MAP.get(node_type, 'box')
+                node_type_caption = node_type.capitalize()
+                fillcolor, color = NODE_COLOR_MAP.get(node_type, DEFAULT_COLORS)
 
-        # Get node name if available
-        node_name_caption = node_name_map.get(fw) if node_name_map else None
+        # Get node name if available using node_map methods
+        node_name_caption = node_map.get_node_name(fw) if node_map else None
 
         # Prepare the caption
         if node_name_caption:
@@ -261,15 +251,14 @@ def create_network_diagram(
     return diagram_file
 
 
-def convert_from_mermaid(mermaid_input, title=None, node_type_map=None, node_name_map=None):
+def convert_from_mermaid(mermaid_input, title=None, node_map=None):  # Updated parameter
     """
     Convert Mermaid flowchart syntax to DOT format for Graphviz
 
     Args:
         mermaid_input (str): Input string in Mermaid flowchart format
         title (str, optional): Title to be displayed on the graph. Defaults to None.
-        node_type_map (dict, optional): Mapping of node names to their types for shape determination
-        node_name_map (dict, optional): Mapping of node IDs to display names
+        node_map (SubnetFirewallMapper, optional): Instance of SubnetFirewallMapper with node information
 
     Returns:
         str: Converted flowchart in DOT format
@@ -321,16 +310,17 @@ def convert_from_mermaid(mermaid_input, title=None, node_type_map=None, node_nam
         node_name_caption = None
         fillcolor, color = DEFAULT_COLORS
 
-        # Apply node type mapping if available
-        if node_type_map and node in node_type_map:
-            node_type = node_type_map[node]
-            node_shape = NODE_STYLE_MAP.get(node_type, 'box')
-            node_type_caption = node_type.capitalize()
-            fillcolor, color = NODE_COLOR_MAP.get(node_type, DEFAULT_COLORS)
+        # Apply node type mapping if available using node_map methods
+        if node_map:
+            node_type = node_map.get_node_type(node)
+            if node_type:
+                node_shape = NODE_STYLE_MAP.get(node_type, 'box')
+                node_type_caption = node_type.capitalize()
+                fillcolor, color = NODE_COLOR_MAP.get(node_type, DEFAULT_COLORS)
 
-        # Get node name if available
-        if node_name_map and node in node_name_map:
-            node_name_caption = node_name_map.get(node)
+        # Get node name if available using node_map methods
+        if node_map:
+            node_name_caption = node_map.get_node_name(node)
 
         # Prepare the caption using the same logic as in create_network_diagram
         if node_name_caption:
