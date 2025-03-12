@@ -1,10 +1,10 @@
 from graphviz import Digraph, Source
 from collections import defaultdict
 import group_diagram_comments
-import ipaddress
+from subnetfirewallmapper import END_NODE_TYPES
 
 # Set up node type shapes
-end_node_types = ['server', 'end node', 'load balancer', 'f5']
+end_node_types = END_NODE_TYPES
 NODE_STYLE_MAP = {
     'firewall': 'box',
     'router': 'diamond',

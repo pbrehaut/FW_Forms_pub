@@ -1,6 +1,7 @@
 import yaml
 import ipaddress
 from typing import Dict, Optional, Union, List, Tuple
+END_NODE_TYPES = ('server', 'end node', 'load balancer', 'f5')
 
 
 class SubnetFirewallMapper:
@@ -11,7 +12,6 @@ class SubnetFirewallMapper:
         self.yaml_file_path = yaml_file_path
         self.route_dump_path = route_dump_path
         self.subnet_firewall_map = self._create_subnet_firewall_map()
-
 
     def _load_yaml_data(self) -> Optional[Dict]:
         try:
@@ -119,6 +119,9 @@ class SubnetFirewallMapper:
                  or empty string if not found
         """
         return self.node_types.get(node_id, "")
+
+    def is_end_node(self, node_name: str) -> bool:
+        return self.get_node_type(node_name) in END_NODE_TYPES
 
     def is_ip_on_node(self, node_name: str, ip_address: str) -> bool:
         """
