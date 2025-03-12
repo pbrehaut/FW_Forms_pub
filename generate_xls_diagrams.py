@@ -12,6 +12,7 @@ from configmanager import ConfigManager
 from combine_diagrams import combine_tuple_fields
 
 import group_rules
+import group_end_nodes
 import data_transform_funcs
 import write_excel_from_tmpl
 import generate_diagrams_graphviz as generate_diagrams
@@ -205,6 +206,8 @@ def generate_output(cust_rules, config_mgr, file_prefix=None):
         # this will allow regrouping based on the installed on gateway
         rule_src_dst_permutations = filter_include_flows.filter_ip_data(rule_src_dst_permutations, topology_inc_flows)
         rule_src_dst_permutations = filter_excluded_flows.filter_ip_data(rule_src_dst_permutations, topology_exc_flows)
+
+        end_node_grp = group_end_nodes.organize_network_paths(rule_src_dst_permutations, topologies)
         rule_src_dst_permutations = data_transform_funcs.transform_network_data(rule_src_dst_permutations)
 
         # Group the permutations/combinations on the topology and the install on firewall
