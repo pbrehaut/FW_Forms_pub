@@ -1,11 +1,3 @@
-import matplotlib.pyplot as plt
-import matplotlib.patches as patches
-from matplotlib.path import Path
-import numpy as np
-from ipaddress import IPv4Interface
-from typing import Dict, List, Tuple, Any, Set
-
-
 def draw_ip_group(ax, x, y, title, ip_list, is_source=True):
     """
     Draw a group of IPs as a single entity with a title.
@@ -56,6 +48,14 @@ def draw_ip_group(ax, x, y, title, ip_list, is_source=True):
 
     return text_obj
 
+
+import matplotlib.pyplot as plt
+import matplotlib.patches as patches
+from matplotlib.path import Path
+import numpy as np
+from ipaddress import IPv4Interface
+from typing import Dict, List, Tuple, Any, Set
+import matplotlib.colors as mcolors
 
 
 def create_firewall_flow_diagram(params: Dict[str, Any], output_file: str = None,
@@ -143,9 +143,10 @@ def create_firewall_flow_diagram(params: Dict[str, Any], output_file: str = None
         ax.spines['left'].set_visible(True)
         ax.spines['right'].set_visible(True)
 
-        # Create the path title
+        # Create the path title including topology
         path_name = ' → '.join(path_tuple)
-        ax.set_title(f"Path: {path_name}", fontsize=10)
+        topology = path_data.get('topology', '')
+        ax.set_title(f"Path: {path_name}\nTopology: {topology}", fontsize=10)
 
         # Draw the flow diagram
         draw_flow_path(ax, path_tuple, path_data, topology_mappers, node_colors)
@@ -310,26 +311,38 @@ def draw_flow_path(ax, path_tuple, path_data, topology_mappers, node_colors):
             # Draw arrow from last core node to destination end node
             draw_arrow(ax, last_core_pos, dst_pos)
 
-    # Extract all unique source and destination IPs
+    # Extract all unique source and destination IPs (excluding those already on nodes)
+    displayed_ips = set()
+    for node_id, ips in node_ip_map.items():
+        for ip in ips:
+            displayed_ips.add(str(ip.ip))
+
     unique_src_ips = set()
     unique_dst_ips = set()
 
     for src_ip, dst_ip in ip_pairs:
-        unique_src_ips.add(str(src_ip.ip))
-        unique_dst_ips.add(str(dst_ip.ip))
+        # Only add source IPs that aren't already displayed on nodes
+        if str(src_ip.ip) not in displayed_ips:
+            unique_src_ips.add(str(src_ip.ip))
 
-    # Draw IP groups at either end of the diagram
-    draw_ip_group(ax, 0.05, 0.8, "Source IPs", list(unique_src_ips), is_source=True)
-    draw_ip_group(ax, 0.95, 0.8, "Destination IPs", list(unique_dst_ips), is_source=False)
+        # Only add destination IPs that aren't already displayed on nodes
+        if str(dst_ip.ip) not in displayed_ips:
+            unique_dst_ips.add(str(dst_ip.ip))
 
-    # Draw arrows from source IP group to first core node (if any)
-    if core_path_nodes:
-        first_core_pos = node_positions[core_path_nodes[0]]
-        draw_arrow(ax, (0.1, 0.8), first_core_pos)
+    # Draw IP groups at either end of the diagram (only if they have IPs)
+    if unique_src_ips:
+        draw_ip_group(ax, 0.05, 0.8, "Source IPs", list(unique_src_ips), is_source=True)
+        # Draw arrows from source IP group to first core node (if any)
+        if core_path_nodes:
+            first_core_pos = node_positions[core_path_nodes[0]]
+            draw_arrow(ax, (0.1, 0.8), first_core_pos)
 
+    if unique_dst_ips:
+        draw_ip_group(ax, 0.95, 0.8, "Destination IPs", list(unique_dst_ips), is_source=False)
         # Draw arrow from last core node to destination IP group
-        last_core_pos = node_positions[core_path_nodes[-1]]
-        draw_arrow(ax, last_core_pos, (0.9, 0.8))
+        if core_path_nodes:
+            last_core_pos = node_positions[core_path_nodes[-1]]
+            draw_arrow(ax, last_core_pos, (0.9, 0.8))
 
     # Remove the bottom flow IPs text since we now have them at the sides
 
