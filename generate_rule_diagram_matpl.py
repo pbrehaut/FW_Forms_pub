@@ -524,9 +524,10 @@ def draw_node(ax, x, y, node_id, node_name, node_type, is_source, is_destination
                                        boxstyle=patches.BoxStyle("Round", pad=0.02),
                                        facecolor=color, edgecolor='black', linewidth=1.5)
     elif node_type == 'zone':
-        # Create a zone-like shape (rounded rectangle but smaller)
+        # Updated zone shape to properly size based on text content
+        # Using the same padding logic as other node types, but with rounded corners
         shape = patches.FancyBboxPatch((x - width / 2, y - height / 2), width, height,
-                                       boxstyle=patches.BoxStyle("Round4", pad=0.2),
+                                       boxstyle=patches.BoxStyle("Round4", pad=0.1),
                                        facecolor=color, edgecolor='black', linewidth=1.5)
     else:
         # Default shape
