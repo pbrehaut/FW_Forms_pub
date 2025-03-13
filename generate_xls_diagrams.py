@@ -15,6 +15,7 @@ import group_rules
 import group_end_nodes
 import data_transform_funcs
 import write_excel_from_tmpl
+import generate_rule_diagram_matpl
 import generate_diagrams_graphviz as generate_diagrams
 #import generate_diagrams_matplot as generate_diagrams
 import ip_headings
@@ -215,6 +216,7 @@ def generate_output(cust_rules, config_mgr, file_prefix=None):
             'comment': comment,
             'topology_mappers': {k: v[1] for k, v in topologies.items()}
         }
+        generate_rule_diagram_matpl.create_firewall_flow_diagram(rule_diag_params, output_file=f"TEST/diag_{str(original_rule_id)}.png")
         rule_src_dst_permutations = data_transform_funcs.transform_network_data(rule_src_dst_permutations)
 
         # Group the permutations/combinations on the topology and the install on firewall
