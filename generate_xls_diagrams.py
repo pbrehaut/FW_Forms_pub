@@ -208,6 +208,13 @@ def generate_output(cust_rules, config_mgr, file_prefix=None):
         rule_src_dst_permutations = filter_excluded_flows.filter_ip_data(rule_src_dst_permutations, topology_exc_flows)
 
         end_node_grp = group_end_nodes.organize_network_paths(rule_src_dst_permutations, topologies)
+        rule_diag_params = {
+            'data': end_node_grp,
+            'rule_num': original_rule_id,
+            'service':  port,
+            'comment': comment,
+            'topology_mappers': {k: v[1] for k, v in topologies.items()}
+        }
         rule_src_dst_permutations = data_transform_funcs.transform_network_data(rule_src_dst_permutations)
 
         # Group the permutations/combinations on the topology and the install on firewall
