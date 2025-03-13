@@ -55,11 +55,13 @@ def draw_ip_group(ax, x, y, title, ip_list, is_source=True):
 
     ax.add_patch(node)
 
-    return text_obj
+    # Return the connection point for drawing arrows
+    connection_point = (x + 0.05, y) if is_source else (x - 0.05, y)
+    return text_obj, connection_point
 
 
 def create_firewall_flow_diagram(params: Dict[str, Any], output_file: str = None,
-                                 figsize: Tuple[int, int] = (12, 10)):
+                                 figsize: Tuple[int, int] = (10, 18)):
     """
     Generate a diagram illustrating the flows in a firewall rule.
 
@@ -118,9 +120,9 @@ def create_firewall_flow_diagram(params: Dict[str, Any], output_file: str = None
     # Create a separate subplot for each path
     fig.clear()
 
-    # Determine grid layout based on number of paths
-    grid_cols = min(2, num_paths)
-    grid_rows = (num_paths + (grid_cols - 1)) // grid_cols
+    # Use vertical layout with single column
+    grid_cols = 1
+    grid_rows = num_paths
 
     # Re-add the title to the figure
     fig.suptitle(title, fontsize=16, fontweight='bold', y=0.98)
@@ -151,8 +153,11 @@ def create_firewall_flow_diagram(params: Dict[str, Any], output_file: str = None
         # Draw the flow diagram
         draw_flow_path(ax, path_tuple, path_data, topology_mappers, node_colors)
 
-    # Adjust layout
+    # Adjust layout with increased vertical spacing
     fig.tight_layout(rect=[0, 0, 1, 0.95])
+
+    # Add more vertical spacing between subplots
+    fig.subplots_adjust(hspace=0.4)
 
     # Save or display the figure
     if output_file:
@@ -236,34 +241,50 @@ def draw_flow_path(ax, path_tuple, path_data, topology_mappers, node_colors):
     for i, node_id in enumerate(core_path_nodes):
         node_positions[node_id] = (i / (num_core_nodes - 1 or 1), 0.5)
 
-    # Position source end nodes on the left, vertically distributed
+    # Position source end nodes on the left side, vertically distributed
+    # If there's a first core node, align with it; otherwise use center
+    first_core_y = 0.5
+    if core_path_nodes:
+        first_core_y = node_positions[core_path_nodes[0]][1]
+
     num_source_end = len(source_end_nodes)
     for i, node_id in enumerate(source_end_nodes):
-        # Determine vertical spacing
+        # Use vertical spacing with the first core node as the reference point
         if num_source_end > 1:
-            vertical_pos = 0.2 + (i * 0.6 / (num_source_end - 1))
+            # Space them out, starting slightly above the core node
+            vertical_offset = (i - (num_source_end - 1) / 2) * 0.15
+            vertical_pos = first_core_y + vertical_offset
         else:
-            vertical_pos = 0.5
+            vertical_pos = first_core_y
 
         # Place to the left of the first core node
         horizontal_pos = 0.0  # Far left
         node_positions[node_id] = (horizontal_pos, vertical_pos)
 
     # Position destination end nodes on the right, vertically distributed
+    # If there's a last core node, align with it; otherwise use center
+    last_core_y = 0.5
+    if core_path_nodes:
+        last_core_y = node_positions[core_path_nodes[-1]][1]
+
     num_dest_end = len(dest_end_nodes)
     for i, node_id in enumerate(dest_end_nodes):
-        # Determine vertical spacing
+        # Use vertical spacing with the last core node as the reference point
         if num_dest_end > 1:
-            vertical_pos = 0.2 + (i * 0.6 / (num_dest_end - 1))
+            # Space them out, starting slightly above the core node
+            vertical_offset = (i - (num_dest_end - 1) / 2) * 0.15
+            vertical_pos = last_core_y + vertical_offset
         else:
-            vertical_pos = 0.5
+            vertical_pos = last_core_y
 
         # Place to the right of the last core node
         horizontal_pos = 1.0  # Far right
         node_positions[node_id] = (horizontal_pos, vertical_pos)
 
-    # Draw nodes
+    # Draw nodes and save their connection points
     node_shapes = {}
+    node_connection_points = {}
+
     for node_id, (x, y) in node_positions.items():
         node_name = mapper.get_node_name(node_id)
         node_type = mapper.get_node_type(node_id)
@@ -277,16 +298,23 @@ def draw_flow_path(ax, path_tuple, path_data, topology_mappers, node_colors):
         node_ips = node_ip_map.get(node_id, [])
 
         # Draw the node
-        node_shape = draw_node(ax, x, y, node_id, node_name, node_type,
-                               is_source, is_destination, is_end, node_colors, node_ips)
+        node_shape, connection_points = draw_node(ax, x, y, node_id, node_name, node_type,
+                                                  is_source, is_destination, is_end, node_colors, node_ips)
         node_shapes[node_id] = node_shape
+        node_connection_points[node_id] = connection_points
 
     # Draw connections between nodes in the original path
     for i in range(len(core_path_nodes) - 1):
         src_node = core_path_nodes[i]
         dst_node = core_path_nodes[i + 1]
-        src_pos = node_positions[src_node]
-        dst_pos = node_positions[dst_node]
+
+        # Calculate which connection points to use
+        src_points = node_connection_points[src_node]
+        dst_points = node_connection_points[dst_node]
+
+        # Use the right point of source and left point of destination
+        src_pos = src_points['right']
+        dst_pos = dst_points['left']
 
         # Draw arrow connecting nodes
         draw_arrow(ax, src_pos, dst_pos)
@@ -294,20 +322,24 @@ def draw_flow_path(ax, path_tuple, path_data, topology_mappers, node_colors):
     # Connect source end nodes to the first core node if applicable
     if core_path_nodes and source_end_nodes:
         first_core_node = core_path_nodes[0]
-        first_core_pos = node_positions[first_core_node]
+        first_core_points = node_connection_points[first_core_node]
+        first_core_pos = first_core_points['left']  # Connect to the left side
 
         for src_node in source_end_nodes:
-            src_pos = node_positions[src_node]
+            src_points = node_connection_points[src_node]
+            src_pos = src_points['right']  # Connect from the right side
             # Draw arrow from source end node to first core node
             draw_arrow(ax, src_pos, first_core_pos)
 
     # Connect last core node to destination end nodes if applicable
     if core_path_nodes and dest_end_nodes:
         last_core_node = core_path_nodes[-1]
-        last_core_pos = node_positions[last_core_node]
+        last_core_points = node_connection_points[last_core_node]
+        last_core_pos = last_core_points['right']  # Connect from the right side
 
         for dst_node in dest_end_nodes:
-            dst_pos = node_positions[dst_node]
+            dst_points = node_connection_points[dst_node]
+            dst_pos = dst_points['left']  # Connect to the left side
             # Draw arrow from last core node to destination end node
             draw_arrow(ax, last_core_pos, dst_pos)
 
@@ -329,27 +361,36 @@ def draw_flow_path(ax, path_tuple, path_data, topology_mappers, node_colors):
         if str(dst_ip.ip) not in displayed_ips:
             unique_dst_ips.add(str(dst_ip.ip))
 
-    # Draw IP groups at either end of the diagram (only if they have IPs)
-    if unique_src_ips:
-        draw_ip_group(ax, 0.05, 0.8, "Source IPs", list(unique_src_ips), is_source=True)
-        # Draw arrows from source IP group to first core node (if any)
-        if core_path_nodes:
-            first_core_pos = node_positions[core_path_nodes[0]]
-            draw_arrow(ax, (0.1, 0.8), first_core_pos)
+    # Draw IP groups at the left and right ends of the diagram (only if they have IPs)
+    src_connection_point = None
+    dst_connection_point = None
 
-    if unique_dst_ips:
-        draw_ip_group(ax, 0.95, 0.8, "Destination IPs", list(unique_dst_ips), is_source=False)
+    # Position source IPs at the left side at the same height as the first core node
+    if unique_src_ips and core_path_nodes:
+        first_core_y = node_positions[core_path_nodes[0]][1]
+        _, src_connection_point = draw_ip_group(ax, 0.05, first_core_y, "Source IPs", list(unique_src_ips),
+                                                is_source=True)
+
+        # Draw arrows from source IP group to first core node
+        first_core_points = node_connection_points[core_path_nodes[0]]
+        first_core_pos = first_core_points['left']
+        draw_arrow(ax, src_connection_point, first_core_pos)
+
+    # Position destination IPs at the right side at the same height as the last core node
+    if unique_dst_ips and core_path_nodes:
+        last_core_y = node_positions[core_path_nodes[-1]][1]
+        _, dst_connection_point = draw_ip_group(ax, 0.95, last_core_y, "Destination IPs", list(unique_dst_ips),
+                                                is_source=False)
+
         # Draw arrow from last core node to destination IP group
-        if core_path_nodes:
-            last_core_pos = node_positions[core_path_nodes[-1]]
-            draw_arrow(ax, last_core_pos, (0.9, 0.8))
-
-    # Remove the bottom flow IPs text since we now have them at the sides
+        last_core_points = node_connection_points[core_path_nodes[-1]]
+        last_core_pos = last_core_points['right']
+        draw_arrow(ax, last_core_pos, dst_connection_point)
 
 
 def draw_node(ax, x, y, node_id, node_name, node_type, is_source, is_destination, is_end, node_colors, node_ips=None):
     """
-    Draw a node in the diagram.
+    Draw a node in the diagram with dynamic sizing based on text content.
 
     Args:
         ax: Matplotlib axes
@@ -364,29 +405,67 @@ def draw_node(ax, x, y, node_id, node_name, node_type, is_source, is_destination
         node_ips: List of IP addresses associated with this node
 
     Returns:
-        The node shape object
+        Tuple of (node shape object, connection points dictionary)
     """
     # Determine node appearance based on type
     color = node_colors.get(node_type, node_colors[''])
 
-    # Adjust size based on node type and role
-    width, height = 0.12, 0.12  # Make base size a bit smaller
+    # Create the display name
+    if node_name:
+        display_name = node_name
+    else:
+        display_name = node_id
 
-    # Special formatting for end nodes
+    # Add node type if available
+    if node_type:
+        display_name += f"\n({node_type})"
+
+    # Create IP text if available
+    ip_text = ""
+    if node_ips and len(node_ips) > 0:
+        ip_text = "\n".join([str(ip.ip) for ip in node_ips])
+
+    # Measure the text to determine shape size
+    # We'll use a temporary text object to measure
+    temp_text = ax.text(0, 0, display_name + ("\n" + ip_text if ip_text else ""), fontsize=9)
+    bbox = temp_text.get_window_extent(renderer=ax.figure.canvas.get_renderer())
+    temp_text.remove()
+
+    # Convert to axis coordinates
+    bbox_axis = bbox.transformed(ax.transData.inverted())
+    text_width = bbox_axis.width * 1.5  # Add padding
+    text_height = bbox_axis.height * 1.5  # Add padding
+
+    # Set minimum size
+    min_width, min_height = 0.12, 0.12
+    width = max(text_width, min_width)
+    height = max(text_height, min_height)
+
+    # Apply scaling factors based on node roles
     if is_end:
-        width, height = 0.14, 0.18
+        width *= 1.1
+        height *= 1.1
 
-    # Special formatting for source or destination nodes
     if is_source or is_destination:
-        width, height = 0.16, 0.20  # Make them slightly larger
+        width *= 1.1
+        height *= 1.1
 
     # Create shapes based on node type
     if node_type == 'firewall':
         shape = patches.Rectangle((x - width / 2, y - height / 2), width, height,
                                   facecolor=color, edgecolor='black', linewidth=1.5)
+    elif node_type == 'router':
+        # Create a diamond shape for routers
+        diamond_points = [
+            (x, y - height / 2),  # bottom
+            (x + width / 2, y),  # right
+            (x, y + height / 2),  # top
+            (x - width / 2, y)  # left
+        ]
+        shape = patches.Polygon(diamond_points, facecolor=color, edgecolor='black', linewidth=1.5)
     elif node_type == 'cloud':
         # Create a cloud-like shape using an ellipse
-        shape = patches.Ellipse((x, y), width * 1.5, height,
+        shape = patches.Ellipse((x, y), width * 1.2, height,
                                 facecolor=color, edgecolor='black', linewidth=1.5)
     elif node_type == 'server':
         # Create a server-like shape
@@ -423,32 +502,47 @@ def draw_node(ax, x, y, node_id, node_name, node_type, is_source, is_destination
                                    linestyle='-')
         ax.add_patch(border)
 
-    # Create the display name
-    if node_name:
-        display_name = node_name
-    else:
-        display_name = node_id
-
-    # Add node type if available
-    if node_type:
-        display_name += f"\n({node_type})"
-
     # Add node name
-    ax.text(x, y - height / 4, display_name, ha='center', va='center',
+    ax.text(x, y - height / 5 if ip_text else y, display_name, ha='center', va='center',
             fontsize=9, fontweight='bold')
 
     # Add IP addresses if available
-    if node_ips and len(node_ips) > 0:
-        ip_text = "\n".join([str(ip.ip) for ip in node_ips])
-        ax.text(x, y + height / 3, ip_text, ha='center', va='center',
+    if ip_text:
+        ax.text(x, y + height / 4, ip_text, ha='center', va='center',
                 fontsize=7, color='darkblue')
 
-    return shape
+    # Define connection points for edges
+    connection_points = {
+        'left': (x - width / 2, y),
+        'right': (x + width / 2, y),
+        'top': (x, y + height / 2),
+        'bottom': (x, y - height / 2)
+    }
+
+    # Adjust connection points for special shapes
+    if node_type == 'router':
+        # Diamond shape has different connection points
+        connection_points = {
+            'left': (x - width / 2, y),
+            'right': (x + width / 2, y),
+            'top': (x, y + height / 2),
+            'bottom': (x, y - height / 2)
+        }
+    elif node_type == 'cloud':
+        # Ellipse shape has different connection points
+        connection_points = {
+            'left': (x - width * 0.6, y),
+            'right': (x + width * 0.6, y),
+            'top': (x, y + height / 2),
+            'bottom': (x, y - height / 2)
+        }
+
+    return shape, connection_points
 
 
 def draw_arrow(ax, start_pos, end_pos):
     """
-    Draw an arrow between two nodes.
+    Draw an arrow between two connection points.
 
     Args:
         ax: Matplotlib axes
@@ -473,6 +567,7 @@ if __name__ == "__main__":
                 "FW1": "Firewall 1",
                 "MGMT_FW": "Management FW",
                 "TRANSIT_FW": "Transit FW",
+                "ROUTER1": "Router 1",
                 "PERIMETER": "Perimeter Zone",
                 "AWS": "AWS Cloud",
                 "AZURE": "Azure Cloud"
@@ -481,6 +576,7 @@ if __name__ == "__main__":
                 "FW1": "firewall",
                 "MGMT_FW": "firewall",
                 "TRANSIT_FW": "firewall",
+                "ROUTER1": "router",
                 "PERIMETER": "zone",
                 "AWS": "cloud",
                 "AZURE": "cloud"
@@ -513,7 +609,7 @@ if __name__ == "__main__":
         'comment': 'Management traffic \nto MGMT Server',
         'service': 'Syslog, NTP, DNS\nSNMP Trap',
         'data': {
-            ('FW1', 'MGMT_FW', 'AWS'): {
+            ('FW1', 'ROUTER1', 'MGMT_FW', 'AWS'): {
                 'destination_nodes': ['AWS'],
                 'ip_pairs': [
                     (IPv4Interface('192.168.1.10/32'), IPv4Interface('10.200.1.20/32')),
