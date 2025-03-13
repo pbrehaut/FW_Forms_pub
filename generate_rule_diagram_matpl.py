@@ -164,7 +164,8 @@ def create_firewall_flow_diagram(params: Dict[str, Any], output_file: str = None
 
 def draw_flow_path(ax, path_tuple, path_data, topology_mappers, node_colors):
     """
-    Draw a single flow path in the diagram.
+    Draw a single flow path in the diagram with enforced left-to-right flow.
+    Source nodes on left, destination nodes on right.
 
     Args:
         ax: Matplotlib axes
@@ -194,26 +195,54 @@ def draw_flow_path(ax, path_tuple, path_data, topology_mappers, node_colors):
     # Find IP mappings for source and destination nodes
     node_ip_map = {}
 
-    # Organize nodes by type for better placement
-    core_path_nodes = list(path_tuple)  # Main path nodes (horizontal flow)
-    source_end_nodes = []  # Source nodes that aren't in the main path
-    dest_end_nodes = []  # Destination nodes that aren't in the main path
+    # COMPLETELY NEW APPROACH TO NODE LAYOUT
+    # =====================================
 
-    # Separate source nodes that aren't in the main path
-    for node in source_nodes:
-        if node not in core_path_nodes:
-            source_end_nodes.append(node)
+    # 1. Classify all nodes by their role (source-only, destination-only, both, or transit)
+    all_nodes = set(path_tuple) | set(source_nodes) | set(destination_nodes)
 
-    # Separate destination nodes that aren't in the main path
-    for node in destination_nodes:
-        if node not in core_path_nodes:
-            dest_end_nodes.append(node)
+    pure_source_nodes = [n for n in all_nodes if n in source_nodes and n not in destination_nodes]
+    pure_dest_nodes = [n for n in all_nodes if n in destination_nodes and n not in source_nodes]
+    both_nodes = [n for n in all_nodes if n in source_nodes and n in destination_nodes]
+    transit_nodes = [n for n in all_nodes if n not in source_nodes and n not in destination_nodes]
 
-    # Combine all nodes for IP mapping
-    all_nodes = core_path_nodes + source_end_nodes + dest_end_nodes
+    # 2. Create layout sections from left to right
+    left_nodes = pure_source_nodes  # Pure source nodes go on the far left
+    middle_left_nodes = both_nodes  # Dual-role nodes (both source and dest) go center-left
+    middle_nodes = transit_nodes  # Transit nodes (neither source nor dest) go center
+    right_nodes = pure_dest_nodes  # Pure destination nodes go on the far right
+
+    # 3. Remove nodes that aren't in the path from middle sections (they'll be positioned separately)
+    path_set = set(path_tuple)
+    middle_left_nodes = [n for n in middle_left_nodes if n in path_set]
+    middle_nodes = [n for n in middle_nodes if n in path_set]
+
+    # 4. Separate path nodes from non-path nodes (pure endpoints)
+    path_left_nodes = [n for n in left_nodes if n in path_set]
+    path_right_nodes = [n for n in right_nodes if n in path_set]
+
+    pure_left_endpoints = [n for n in left_nodes if n not in path_set]
+    pure_right_endpoints = [n for n in right_nodes if n not in path_set]
+
+    # 5. Construct a new layout order for the main path
+    # This maintains the same node visitation order as path_tuple but ensures proper left-to-right role flow
+    ordered_path = []
+    path_lookup = {node: i for i, node in enumerate(path_tuple)}
+
+    # Add all path nodes by their original ordering in path_tuple
+    path_nodes_ordered = []
+    for node_type in [path_left_nodes, middle_left_nodes, middle_nodes, path_right_nodes]:
+        # Sort each section by the original path order
+        node_type_ordered = sorted(node_type, key=lambda n: path_lookup.get(n, float('inf')))
+        path_nodes_ordered.extend(node_type_ordered)
+
+    # Replace path_tuple with our new ordered path (preserves proper drawing order)
+    ordered_path = path_nodes_ordered
 
     # Map nodes to their IPs
-    for node_id in all_nodes:
+    all_nodes_list = ordered_path + pure_left_endpoints + pure_right_endpoints
+
+    for node_id in all_nodes_list:
         for src_ip, dst_ip in ip_pairs:
             # Check if this node has this source IP
             if node_id in source_nodes and mapper.is_ip_on_node(node_id, str(src_ip.ip)):
@@ -229,53 +258,36 @@ def draw_flow_path(ax, path_tuple, path_data, topology_mappers, node_colors):
                 if dst_ip not in node_ip_map[node_id]:
                     node_ip_map[node_id].append(dst_ip)
 
-    # Calculate positions for nodes
+    # Calculate positions for nodes with new layout approach
     node_positions = {}
 
-    # Position main path nodes horizontally in the center
-    num_core_nodes = len(core_path_nodes)
-    for i, node_id in enumerate(core_path_nodes):
-        node_positions[node_id] = (i / (num_core_nodes - 1 or 1), 0.5)
+    # Position main path nodes horizontally with proper spacing
+    num_path_nodes = len(ordered_path)
+    if num_path_nodes > 0:
+        for i, node_id in enumerate(ordered_path):
+            # Calculate a position that reflects the node's role
+            # We'll use the full width (0.2 to 0.8) for the main path
+            node_positions[node_id] = (0.2 + (i / (num_path_nodes - 1 or 1)) * 0.6, 0.5)
 
-    # Position source end nodes on the left side, vertically distributed
-    # If there's a first core node, align with it; otherwise use center
-    first_core_y = 0.5
-    if core_path_nodes:
-        first_core_y = node_positions[core_path_nodes[0]][1]
-
-    num_source_end = len(source_end_nodes)
-    for i, node_id in enumerate(source_end_nodes):
-        # Use vertical spacing with the first core node as the reference point
-        if num_source_end > 1:
-            # Space them out, starting slightly above the core node
-            vertical_offset = (i - (num_source_end - 1) / 2) * 0.15
-            vertical_pos = first_core_y + vertical_offset
+    # Position pure source endpoints on the far left
+    num_pure_left = len(pure_left_endpoints)
+    for i, node_id in enumerate(pure_left_endpoints):
+        if num_pure_left > 1:
+            # Stack them vertically if there are multiple
+            vertical_pos = 0.3 + (i / (num_pure_left - 1 or 1)) * 0.4
         else:
-            vertical_pos = first_core_y
+            vertical_pos = 0.5
+        node_positions[node_id] = (0.05, vertical_pos)  # Far left (x=0.05)
 
-        # Place to the left of the first core node
-        horizontal_pos = 0.0  # Far left
-        node_positions[node_id] = (horizontal_pos, vertical_pos)
-
-    # Position destination end nodes on the right, vertically distributed
-    # If there's a last core node, align with it; otherwise use center
-    last_core_y = 0.5
-    if core_path_nodes:
-        last_core_y = node_positions[core_path_nodes[-1]][1]
-
-    num_dest_end = len(dest_end_nodes)
-    for i, node_id in enumerate(dest_end_nodes):
-        # Use vertical spacing with the last core node as the reference point
-        if num_dest_end > 1:
-            # Space them out, starting slightly above the core node
-            vertical_offset = (i - (num_dest_end - 1) / 2) * 0.15
-            vertical_pos = last_core_y + vertical_offset
+    # Position pure destination endpoints on the far right
+    num_pure_right = len(pure_right_endpoints)
+    for i, node_id in enumerate(pure_right_endpoints):
+        if num_pure_right > 1:
+            # Stack them vertically if there are multiple
+            vertical_pos = 0.3 + (i / (num_pure_right - 1 or 1)) * 0.4
         else:
-            vertical_pos = last_core_y
-
-        # Place to the right of the last core node
-        horizontal_pos = 1.0  # Far right
-        node_positions[node_id] = (horizontal_pos, vertical_pos)
+            vertical_pos = 0.5
+        node_positions[node_id] = (0.95, vertical_pos)  # Far right (x=0.95)
 
     # Draw nodes and save their connection points
     node_shapes = {}
@@ -299,10 +311,14 @@ def draw_flow_path(ax, path_tuple, path_data, topology_mappers, node_colors):
         node_shapes[node_id] = node_shape
         node_connection_points[node_id] = connection_points
 
-    # Draw connections between nodes in the original path
-    for i in range(len(core_path_nodes) - 1):
-        src_node = core_path_nodes[i]
-        dst_node = core_path_nodes[i + 1]
+    # Draw connections between nodes in the path
+    for i in range(len(path_tuple) - 1):
+        src_node = path_tuple[i]
+        dst_node = path_tuple[i + 1]
+
+        # Skip if nodes aren't in our positions (shouldn't happen but just in case)
+        if src_node not in node_positions or dst_node not in node_positions:
+            continue
 
         # Calculate which connection points to use
         src_points = node_connection_points[src_node]
@@ -315,30 +331,39 @@ def draw_flow_path(ax, path_tuple, path_data, topology_mappers, node_colors):
         # Draw arrow connecting nodes
         draw_arrow(ax, src_pos, dst_pos)
 
-    # Connect source end nodes to the first core node if applicable
-    if core_path_nodes and source_end_nodes:
-        first_core_node = core_path_nodes[0]
-        first_core_points = node_connection_points[first_core_node]
-        first_core_pos = first_core_points['left']  # Connect to the left side
+    # Connect pure source endpoints to related source nodes in the path
+    for left_node in pure_left_endpoints:
+        # Find a source node in the path to connect to
+        # Prefer the leftmost one
+        target_node = None
+        for path_node in ordered_path:
+            if path_node in source_nodes:
+                target_node = path_node
+                break
 
-        for src_node in source_end_nodes:
-            src_points = node_connection_points[src_node]
-            src_pos = src_points['right']  # Connect from the right side
-            # Draw arrow from source end node to first core node
-            draw_arrow(ax, src_pos, first_core_pos)
+        if target_node:
+            # Draw arrow from pure source to path source
+            left_points = node_connection_points[left_node]
+            target_points = node_connection_points[target_node]
+            draw_arrow(ax, left_points['right'], target_points['left'])
 
-    # Connect last core node to destination end nodes if applicable
-    if core_path_nodes and dest_end_nodes:
-        last_core_node = core_path_nodes[-1]
-        last_core_points = node_connection_points[last_core_node]
-        last_core_pos = last_core_points['right']  # Connect from the right side
+    # Connect path destination nodes to pure destination endpoints
+    for right_node in pure_right_endpoints:
+        # Find a destination node in the path to connect from
+        # Prefer the rightmost one
+        source_node = None
+        for path_node in reversed(ordered_path):
+            if path_node in destination_nodes:
+                source_node = path_node
+                break
 
-        for dst_node in dest_end_nodes:
-            dst_points = node_connection_points[dst_node]
-            dst_pos = dst_points['left']  # Connect to the left side
-            # Draw arrow from last core node to destination end node
-            draw_arrow(ax, last_core_pos, dst_pos)
+        if source_node:
+            # Draw arrow from path destination to pure destination
+            source_points = node_connection_points[source_node]
+            right_points = node_connection_points[right_node]
+            draw_arrow(ax, source_points['right'], right_points['left'])
 
+    # Handle loose IP addresses not attached to nodes
     # Extract all unique source and destination IPs (excluding those already on nodes)
     displayed_ips = set()
     for node_id, ips in node_ip_map.items():
@@ -361,27 +386,57 @@ def draw_flow_path(ax, path_tuple, path_data, topology_mappers, node_colors):
     src_connection_point = None
     dst_connection_point = None
 
-    # Position source IPs at the left side at the same height as the first core node
-    if unique_src_ips and core_path_nodes:
-        first_core_y = node_positions[core_path_nodes[0]][1]
-        _, src_connection_point = draw_ip_group(ax, 0.05, first_core_y, "Source IPs", list(unique_src_ips),
+    # Position source IPs at the far left
+    if unique_src_ips:
+        # Find position based on left-side nodes if any
+        if ordered_path:
+            leftmost_y = node_positions[ordered_path[0]][1]
+        elif pure_left_endpoints:
+            leftmost_y = node_positions[pure_left_endpoints[0]][1]
+        else:
+            leftmost_y = 0.5
+
+        _, src_connection_point = draw_ip_group(ax, 0.02, leftmost_y, "Source IPs", list(unique_src_ips),
                                                 is_source=True)
 
-        # Draw arrows from source IP group to first core node
-        first_core_points = node_connection_points[core_path_nodes[0]]
-        first_core_pos = first_core_points['left']
-        draw_arrow(ax, src_connection_point, first_core_pos)
+        # Draw arrows to first path node or first source node
+        if ordered_path:
+            first_node = ordered_path[0]
+            first_points = node_connection_points[first_node]
+            first_pos = first_points['left']
+            draw_arrow(ax, src_connection_point, first_pos)
+        elif pure_left_endpoints:
+            # Connect to a pure source endpoint instead
+            end_node = pure_left_endpoints[0]
+            end_points = node_connection_points[end_node]
+            end_pos = end_points['left']
+            draw_arrow(ax, src_connection_point, end_pos)
 
-    # Position destination IPs at the right side at the same height as the last core node
-    if unique_dst_ips and core_path_nodes:
-        last_core_y = node_positions[core_path_nodes[-1]][1]
-        _, dst_connection_point = draw_ip_group(ax, 0.95, last_core_y, "Destination IPs", list(unique_dst_ips),
+    # Position destination IPs at the far right
+    if unique_dst_ips:
+        # Find position based on right-side nodes if any
+        if ordered_path:
+            rightmost_y = node_positions[ordered_path[-1]][1]
+        elif pure_right_endpoints:
+            rightmost_y = node_positions[pure_right_endpoints[0]][1]
+        else:
+            rightmost_y = 0.5
+
+        _, dst_connection_point = draw_ip_group(ax, 0.98, rightmost_y, "Destination IPs", list(unique_dst_ips),
                                                 is_source=False)
 
-        # Draw arrow from last core node to destination IP group
-        last_core_points = node_connection_points[core_path_nodes[-1]]
-        last_core_pos = last_core_points['right']
-        draw_arrow(ax, last_core_pos, dst_connection_point)
+        # Draw arrows from last path node or last destination node
+        if ordered_path:
+            last_node = ordered_path[-1]
+            last_points = node_connection_points[last_node]
+            last_pos = last_points['right']
+            draw_arrow(ax, last_pos, dst_connection_point)
+        elif pure_right_endpoints:
+            # Connect from a pure destination endpoint instead
+            end_node = pure_right_endpoints[0]
+            end_points = node_connection_points[end_node]
+            end_pos = end_points['right']
+            draw_arrow(ax, end_pos, dst_connection_point)
 
 
 def draw_node(ax, x, y, node_id, node_name, node_type, is_source, is_destination, is_end, node_colors, node_ips=None):
