@@ -1,10 +1,6 @@
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
-from matplotlib.path import Path
-import numpy as np
-from ipaddress import IPv4Interface
 from typing import Dict, List, Tuple, Any, Set
-import matplotlib.colors as mcolors
 
 
 def draw_ip_group(ax, x, y, title, ip_list, is_source=True):
@@ -556,89 +552,3 @@ def draw_arrow(ax, start_pos, end_pos):
     # Draw the arrow
     ax.arrow(x1, y1, x2 - x1, y2 - y1, head_width=0.02, head_length=0.03,
              fc='black', ec='black', length_includes_head=True)
-
-
-# Example usage
-if __name__ == "__main__":
-    # Mock topology mapper for testing
-    class MockTopologyMapper:
-        def __init__(self):
-            self.node_names = {
-                "FW1": "Firewall 1",
-                "MGMT_FW": "Management FW",
-                "TRANSIT_FW": "Transit FW",
-                "ROUTER1": "Router 1",
-                "PERIMETER": "Perimeter Zone",
-                "AWS": "AWS Cloud",
-                "AZURE": "Azure Cloud"
-            }
-            self.node_types = {
-                "FW1": "firewall",
-                "MGMT_FW": "firewall",
-                "TRANSIT_FW": "firewall",
-                "ROUTER1": "router",
-                "PERIMETER": "zone",
-                "AWS": "cloud",
-                "AZURE": "cloud"
-            }
-
-        def get_node_name(self, node_id):
-            return self.node_names.get(node_id, "")
-
-        def get_node_type(self, node_id):
-            return self.node_types.get(node_id, "")
-
-        def is_end_node(self, node_name):
-            return self.get_node_type(node_name) in ["server", "cloud"]
-
-        def is_ip_on_node(self, node_name, ip_address):
-            # Mock implementation
-            return True
-
-
-    # Create a dictionary of topology mappers for testing
-    mappers = {
-        'MGMT': MockTopologyMapper(),
-        'COR': MockTopologyMapper(),
-        'PERIMETER': MockTopologyMapper()
-    }
-
-    # Sample rule data (simplified from the provided example)
-    params = {
-        'rule_num': 1,
-        'comment': 'Management traffic \nto MGMT Server',
-        'service': 'Syslog, NTP, DNS\nSNMP Trap',
-        'data': {
-            ('FW1', 'ROUTER1', 'MGMT_FW', 'AWS'): {
-                'destination_nodes': ['AWS'],
-                'ip_pairs': [
-                    (IPv4Interface('192.168.1.10/32'), IPv4Interface('10.200.1.20/32')),
-                    (IPv4Interface('192.168.1.20/32'), IPv4Interface('10.200.1.20/32'))
-                ],
-                'source_nodes': ['FW1'],
-                'topology': 'MGMT'
-            },
-            ('FW1', 'MGMT_FW', 'AZURE'): {
-                'destination_nodes': ['AZURE'],
-                'ip_pairs': [
-                    (IPv4Interface('192.168.1.10/32'), IPv4Interface('10.100.1.10/32')),
-                    (IPv4Interface('192.168.1.20/32'), IPv4Interface('10.100.1.10/32'))
-                ],
-                'source_nodes': ['FW1'],
-                'topology': 'MGMT'
-            },
-            ('FW1', 'TRANSIT_FW', 'PERIMETER', 'AWS'): {
-                'destination_nodes': ['AWS'],
-                'ip_pairs': [
-                    (IPv4Interface('10.1.1.10/32'), IPv4Interface('10.200.1.20/32')),
-                    (IPv4Interface('10.1.1.20/32'), IPv4Interface('10.200.1.20/32'))
-                ],
-                'source_nodes': [],
-                'topology': 'COR'
-            }
-        },
-        'topology_mappers': mappers
-    }
-
-    fig = create_firewall_flow_diagram(params)
-    plt.show()
