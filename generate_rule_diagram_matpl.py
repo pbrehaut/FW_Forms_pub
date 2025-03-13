@@ -1,3 +1,12 @@
+import matplotlib.pyplot as plt
+import matplotlib.patches as patches
+from matplotlib.path import Path
+import numpy as np
+from ipaddress import IPv4Interface
+from typing import Dict, List, Tuple, Any, Set
+import matplotlib.colors as mcolors
+
+
 def draw_ip_group(ax, x, y, title, ip_list, is_source=True):
     """
     Draw a group of IPs as a single entity with a title.
@@ -47,15 +56,6 @@ def draw_ip_group(ax, x, y, title, ip_list, is_source=True):
     ax.add_patch(node)
 
     return text_obj
-
-
-import matplotlib.pyplot as plt
-import matplotlib.patches as patches
-from matplotlib.path import Path
-import numpy as np
-from ipaddress import IPv4Interface
-from typing import Dict, List, Tuple, Any, Set
-import matplotlib.colors as mcolors
 
 
 def create_firewall_flow_diagram(params: Dict[str, Any], output_file: str = None,
