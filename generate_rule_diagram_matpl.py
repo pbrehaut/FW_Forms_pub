@@ -6,6 +6,58 @@ from ipaddress import IPv4Interface
 from typing import Dict, List, Tuple, Any, Set
 
 
+def draw_ip_group(ax, x, y, title, ip_list, is_source=True):
+    """
+    Draw a group of IPs as a single entity with a title.
+
+    Args:
+        ax: Matplotlib axes
+        x, y: Coordinates (0-1 range) for the center of the IP group
+        title: Title for the IP group
+        ip_list: List of IP addresses
+        is_source: Whether this is a source IP group (green) or destination (red)
+    """
+    # Create the IP list text
+    ip_text = "\n".join(ip_list)
+
+    # Determine styling based on type
+    if is_source:
+        bg_color = '#e6ffe6'  # Light green
+        border_color = 'green'
+    else:
+        bg_color = '#ffe6e6'  # Light red
+        border_color = 'red'
+
+    # Draw the text box
+    text_obj = ax.text(x, y, f"{title}:\n{ip_text}",
+                       ha='center' if not is_source else 'left',
+                       va='center',
+                       fontsize=8,
+                       bbox=dict(boxstyle="round,pad=0.5",
+                                 facecolor=bg_color,
+                                 edgecolor=border_color,
+                                 linewidth=1.5,
+                                 alpha=0.8))
+
+    # Create a visual node for arrow connection
+    radius = 0.02
+    if is_source:
+        node = patches.Circle((x + 0.05, y), radius,
+                              facecolor=bg_color,
+                              edgecolor=border_color,
+                              linewidth=1.5)
+    else:
+        node = patches.Circle((x - 0.05, y), radius,
+                              facecolor=bg_color,
+                              edgecolor=border_color,
+                              linewidth=1.5)
+
+    ax.add_patch(node)
+
+    return text_obj
+
+
+
 def create_firewall_flow_diagram(params: Dict[str, Any], output_file: str = None,
                                  figsize: Tuple[int, int] = (12, 10)):
     """
@@ -258,20 +310,28 @@ def draw_flow_path(ax, path_tuple, path_data, topology_mappers, node_colors):
             # Draw arrow from last core node to destination end node
             draw_arrow(ax, last_core_pos, dst_pos)
 
-    # We'll rely on the directly displayed node IPs rather than separate boxes
-    # to avoid cluttering the diagram now that we have a more distributed layout
+    # Extract all unique source and destination IPs
+    unique_src_ips = set()
+    unique_dst_ips = set()
 
-    # Draw IP pairs info
-    if ip_pairs:
-        # Create a text box for all IP information
-        ip_text = "Flow IPs:\n"
-        for src_ip, dst_ip in ip_pairs:
-            ip_text += f"{src_ip.ip} → {dst_ip.ip}\n"
+    for src_ip, dst_ip in ip_pairs:
+        unique_src_ips.add(str(src_ip.ip))
+        unique_dst_ips.add(str(dst_ip.ip))
 
-        # Add text at the bottom
-        ax.text(0.5, 0.05, ip_text, ha='center', va='bottom',
-                fontsize=8, bbox=dict(boxstyle="round,pad=0.5",
-                                      facecolor='white', alpha=0.7))
+    # Draw IP groups at either end of the diagram
+    draw_ip_group(ax, 0.05, 0.8, "Source IPs", list(unique_src_ips), is_source=True)
+    draw_ip_group(ax, 0.95, 0.8, "Destination IPs", list(unique_dst_ips), is_source=False)
+
+    # Draw arrows from source IP group to first core node (if any)
+    if core_path_nodes:
+        first_core_pos = node_positions[core_path_nodes[0]]
+        draw_arrow(ax, (0.1, 0.8), first_core_pos)
+
+        # Draw arrow from last core node to destination IP group
+        last_core_pos = node_positions[core_path_nodes[-1]]
+        draw_arrow(ax, last_core_pos, (0.9, 0.8))
+
+    # Remove the bottom flow IPs text since we now have them at the sides
 
 
 def draw_node(ax, x, y, node_id, node_name, node_type, is_source, is_destination, is_end, node_colors, node_ips=None):
