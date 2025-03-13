@@ -137,13 +137,77 @@ def draw_flow_path(ax, path_tuple, path_data, topology_mappers, node_colors):
     source_nodes = path_data.get('source_nodes', [])
     destination_nodes = path_data.get('destination_nodes', [])
 
-    # Calculate positions
-    num_nodes = len(path_tuple)
+    # Find IP mappings for source and destination nodes
+    node_ip_map = {}
+
+    # Organize nodes by type for better placement
+    core_path_nodes = list(path_tuple)  # Main path nodes (horizontal flow)
+    source_end_nodes = []  # Source nodes that aren't in the main path
+    dest_end_nodes = []  # Destination nodes that aren't in the main path
+
+    # Separate source nodes that aren't in the main path
+    for node in source_nodes:
+        if node not in core_path_nodes:
+            source_end_nodes.append(node)
+
+    # Separate destination nodes that aren't in the main path
+    for node in destination_nodes:
+        if node not in core_path_nodes:
+            dest_end_nodes.append(node)
+
+    # Combine all nodes for IP mapping
+    all_nodes = core_path_nodes + source_end_nodes + dest_end_nodes
+
+    # Map nodes to their IPs
+    for node_id in all_nodes:
+        for src_ip, dst_ip in ip_pairs:
+            # Check if this node has this source IP
+            if node_id in source_nodes and mapper.is_ip_on_node(node_id, str(src_ip.ip)):
+                if node_id not in node_ip_map:
+                    node_ip_map[node_id] = []
+                if src_ip not in node_ip_map[node_id]:
+                    node_ip_map[node_id].append(src_ip)
+
+            # Check if this node has this destination IP
+            if node_id in destination_nodes and mapper.is_ip_on_node(node_id, str(dst_ip.ip)):
+                if node_id not in node_ip_map:
+                    node_ip_map[node_id] = []
+                if dst_ip not in node_ip_map[node_id]:
+                    node_ip_map[node_id].append(dst_ip)
+
+    # Calculate positions for nodes
     node_positions = {}
 
-    # Position nodes horizontally
-    for i, node_id in enumerate(path_tuple):
-        node_positions[node_id] = (i / (num_nodes - 1 or 1), 0.5)
+    # Position main path nodes horizontally in the center
+    num_core_nodes = len(core_path_nodes)
+    for i, node_id in enumerate(core_path_nodes):
+        node_positions[node_id] = (i / (num_core_nodes - 1 or 1), 0.5)
+
+    # Position source end nodes on the left, vertically distributed
+    num_source_end = len(source_end_nodes)
+    for i, node_id in enumerate(source_end_nodes):
+        # Determine vertical spacing
+        if num_source_end > 1:
+            vertical_pos = 0.2 + (i * 0.6 / (num_source_end - 1))
+        else:
+            vertical_pos = 0.5
+
+        # Place to the left of the first core node
+        horizontal_pos = 0.0  # Far left
+        node_positions[node_id] = (horizontal_pos, vertical_pos)
+
+    # Position destination end nodes on the right, vertically distributed
+    num_dest_end = len(dest_end_nodes)
+    for i, node_id in enumerate(dest_end_nodes):
+        # Determine vertical spacing
+        if num_dest_end > 1:
+            vertical_pos = 0.2 + (i * 0.6 / (num_dest_end - 1))
+        else:
+            vertical_pos = 0.5
+
+        # Place to the right of the last core node
+        horizontal_pos = 1.0  # Far right
+        node_positions[node_id] = (horizontal_pos, vertical_pos)
 
     # Draw nodes
     node_shapes = {}
@@ -156,25 +220,51 @@ def draw_flow_path(ax, path_tuple, path_data, topology_mappers, node_colors):
         is_destination = node_id in destination_nodes
         is_end = mapper.is_end_node(node_id)
 
+        # Get associated IPs for this node
+        node_ips = node_ip_map.get(node_id, [])
+
         # Draw the node
         node_shape = draw_node(ax, x, y, node_id, node_name, node_type,
-                               is_source, is_destination, is_end, node_colors)
+                               is_source, is_destination, is_end, node_colors, node_ips)
         node_shapes[node_id] = node_shape
 
-    # Draw connections between nodes
-    for i in range(len(path_tuple) - 1):
-        src_node = path_tuple[i]
-        dst_node = path_tuple[i + 1]
+    # Draw connections between nodes in the original path
+    for i in range(len(core_path_nodes) - 1):
+        src_node = core_path_nodes[i]
+        dst_node = core_path_nodes[i + 1]
         src_pos = node_positions[src_node]
         dst_pos = node_positions[dst_node]
 
         # Draw arrow connecting nodes
         draw_arrow(ax, src_pos, dst_pos)
 
-    # Draw IP pairs
+    # Connect source end nodes to the first core node if applicable
+    if core_path_nodes and source_end_nodes:
+        first_core_node = core_path_nodes[0]
+        first_core_pos = node_positions[first_core_node]
+
+        for src_node in source_end_nodes:
+            src_pos = node_positions[src_node]
+            # Draw arrow from source end node to first core node
+            draw_arrow(ax, src_pos, first_core_pos)
+
+    # Connect last core node to destination end nodes if applicable
+    if core_path_nodes and dest_end_nodes:
+        last_core_node = core_path_nodes[-1]
+        last_core_pos = node_positions[last_core_node]
+
+        for dst_node in dest_end_nodes:
+            dst_pos = node_positions[dst_node]
+            # Draw arrow from last core node to destination end node
+            draw_arrow(ax, last_core_pos, dst_pos)
+
+    # We'll rely on the directly displayed node IPs rather than separate boxes
+    # to avoid cluttering the diagram now that we have a more distributed layout
+
+    # Draw IP pairs info
     if ip_pairs:
-        # Create a text box for IP information
-        ip_text = "IP Pairs:\n"
+        # Create a text box for all IP information
+        ip_text = "Flow IPs:\n"
         for src_ip, dst_ip in ip_pairs:
             ip_text += f"{src_ip.ip} → {dst_ip.ip}\n"
 
@@ -184,7 +274,7 @@ def draw_flow_path(ax, path_tuple, path_data, topology_mappers, node_colors):
                                       facecolor='white', alpha=0.7))
 
 
-def draw_node(ax, x, y, node_id, node_name, node_type, is_source, is_destination, is_end, node_colors):
+def draw_node(ax, x, y, node_id, node_name, node_type, is_source, is_destination, is_end, node_colors, node_ips=None):
     """
     Draw a node in the diagram.
 
@@ -198,6 +288,7 @@ def draw_node(ax, x, y, node_id, node_name, node_type, is_source, is_destination
         is_destination: Whether this is a destination node
         is_end: Whether this is an end node
         node_colors: Dictionary mapping node types to colors
+        node_ips: List of IP addresses associated with this node
 
     Returns:
         The node shape object
@@ -205,12 +296,16 @@ def draw_node(ax, x, y, node_id, node_name, node_type, is_source, is_destination
     # Determine node appearance based on type
     color = node_colors.get(node_type, node_colors[''])
 
-    # Adjust size based on node type
-    width, height = 0.15, 0.15
+    # Adjust size based on node type and role
+    width, height = 0.12, 0.12  # Make base size a bit smaller
 
     # Special formatting for end nodes
     if is_end:
-        width, height = 0.15, 0.2
+        width, height = 0.14, 0.18
+
+    # Special formatting for source or destination nodes
+    if is_source or is_destination:
+        width, height = 0.16, 0.20  # Make them slightly larger
 
     # Create shapes based on node type
     if node_type == 'firewall':
@@ -225,6 +320,11 @@ def draw_node(ax, x, y, node_id, node_name, node_type, is_source, is_destination
         shape = patches.FancyBboxPatch((x - width / 2, y - height / 2), width, height,
                                        boxstyle=patches.BoxStyle("Round", pad=0.02),
                                        facecolor=color, edgecolor='black', linewidth=1.5)
+    elif node_type == 'zone':
+        # Create a zone-like shape (rounded rectangle but smaller)
+        shape = patches.FancyBboxPatch((x - width / 2, y - height / 2), width, height,
+                                       boxstyle=patches.BoxStyle("Round4", pad=0.2),
+                                       facecolor=color, edgecolor='black', linewidth=1.5)
     else:
         # Default shape
         shape = patches.Rectangle((x - width / 2, y - height / 2), width, height,
@@ -233,7 +333,7 @@ def draw_node(ax, x, y, node_id, node_name, node_type, is_source, is_destination
     # Add the shape to the axes
     ax.add_patch(shape)
 
-    # Add border for source and destination nodes
+    # Add special border styling for source and destination nodes
     if is_source:
         # Add green border for source
         border = patches.Rectangle((x - width / 2 - 0.01, y - height / 2 - 0.01),
@@ -250,13 +350,25 @@ def draw_node(ax, x, y, node_id, node_name, node_type, is_source, is_destination
                                    linestyle='-')
         ax.add_patch(border)
 
-    # Add node name
+    # Create the display name
     if node_name:
         display_name = node_name
     else:
         display_name = node_id
 
-    ax.text(x, y, display_name, ha='center', va='center', fontsize=9, fontweight='bold')
+    # Add node type if available
+    if node_type:
+        display_name += f"\n({node_type})"
+
+    # Add node name
+    ax.text(x, y - height / 4, display_name, ha='center', va='center',
+            fontsize=9, fontweight='bold')
+
+    # Add IP addresses if available
+    if node_ips and len(node_ips) > 0:
+        ip_text = "\n".join([str(ip.ip) for ip in node_ips])
+        ax.text(x, y + height / 3, ip_text, ha='center', va='center',
+                fontsize=7, color='darkblue')
 
     return shape
 

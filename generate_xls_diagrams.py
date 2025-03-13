@@ -216,7 +216,7 @@ def generate_output(cust_rules, config_mgr, file_prefix=None):
             'comment': comment,
             'topology_mappers': {k: v[1] for k, v in topologies.items()}
         }
-        generate_rule_diagram_matpl.create_firewall_flow_diagram(rule_diag_params, output_file=f"TEST/diag_{str(original_rule_id)}.png")
+        generate_rule_diagram_matpl.create_firewall_flow_diagram(rule_diag_params, output_file=f"TEST/Output/diag_{str(original_rule_id)}.png")
         rule_src_dst_permutations = data_transform_funcs.transform_network_data(rule_src_dst_permutations)
 
         # Group the permutations/combinations on the topology and the install on firewall
